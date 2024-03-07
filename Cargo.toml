@@ -3,6 +3,4 @@ resolver = "2"
 members = [
     "api/shuttle",
     "lib",
-    "repository",
-    "webhook_driver",
 ]
