@@ -4,9 +4,6 @@ use shuttle_persist::PersistInstance;
 use shuttle_secrets::SecretStore;
 use shuttle_serenity::ShuttleSerenity;
 
-mod repository;
-mod webhook_driver;
-
 struct Data {
     persist: PersistInstance,
 } // User data, which is stored and accessible in all command invocations
