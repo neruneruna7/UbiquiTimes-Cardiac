@@ -43,10 +43,15 @@ async fn main(
         })
         .build();
 
-    let client = ClientBuilder::new(discord_token, GatewayIntents::non_privileged())
-        .framework(framework)
-        .await
-        .map_err(shuttle_runtime::CustomError::new)?;
+    let client = ClientBuilder::new(
+        discord_token,
+        GatewayIntents::non_privileged()
+            | GatewayIntents::GUILD_MESSAGES
+            | GatewayIntents::GUILD_WEBHOOKS,
+    )
+    .framework(framework)
+    .await
+    .map_err(shuttle_runtime::CustomError::new)?;
 
     Ok(client.into())
 }
