@@ -2429,6 +2429,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "poise",
+ "serde",
  "shuttle-persist",
  "shuttle-runtime",
  "shuttle-secrets",
