@@ -32,7 +32,7 @@ impl UtTime {
 
 pub trait TimesRepository {
     type Error;
-    async fn upsert_time(&self, time: UtTime) -> Result<(), Self::Error>;
+    async fn upsert_time(&self, time: UtTime) -> Result<UtTime, Self::Error>;
     async fn get_time(&self, user_id: u64, guild_id: u64) -> Result<UtTime, Self::Error>;
     async fn get_times(&self, user_id: u64) -> Result<Vec<UtTime>, Self::Error>;
     async fn delete_time(&self, user_id: u64, guild_id: u64) -> Result<(), Self::Error>;

@@ -18,8 +18,11 @@
 // 	- 保存されたTimes情報のchannel_idと一致しない場合，チャンネル不一致として弾く
 // 	- 実行したギルド以外の，Timesが登録されているすべてのギルドへ同じ内容を送信する
 
+use crate::models::error::{GuildGetError, UserGetError};
 use crate::models::{Context, Data, UbiquiTimesCardiacResult as Result};
-use repository::traits::GuildRepository;
+use crate::webhook_creator::create_webhook_url;
+use poise::serenity_prelude::{ChannelId, CreateWebhook, Webhook};
+use repository::traits::{GuildRepository, TimesRepository};
 use tracing::info;
 
 /// Responds with "world!"
@@ -58,8 +61,8 @@ pub async fn help(
 /// 現在は誰が実行しても同じです
 /// guild_idとguild_nameをbot側に保存します
 pub async fn ut_c_guild_init(ctx: Context<'_>) -> Result<()> {
-    let guild_id = ctx.guild_id().unwrap().get();
-    let guild_name = ctx.guild().unwrap().name.clone();
+    let guild_id = ctx.guild_id().ok_or(GuildGetError)?.get();
+    let guild_name = ctx.guild().ok_or(GuildGetError)?.name.clone();
 
     let guilds_repository = ctx.data().guild_repository.clone();
     let guild = repository::UtGuild::new(guild_id, Some(guild_name.clone()));
@@ -70,5 +73,48 @@ pub async fn ut_c_guild_init(ctx: Context<'_>) -> Result<()> {
         guild_id, guild_name
     ))
     .await?;
+    Ok(())
+}
+
+#[poise::command(prefix_command, track_edits, aliases("UtSet"), slash_command)]
+#[tracing::instrument(skip(ctx))]
+/// 実行したチャンネルをあなたのTimesとして登録します
+///
+/// ２度目以降の実行は情報を更新します
+pub async fn ut_c_times_set(
+    ctx: Context<'_>,
+    #[description = "このギルドで使用する名前"] user_name: String,
+) -> Result<()> {
+    let user_id = ctx.author().id.get();
+    let guild_id = ctx.guild_id().ok_or(GuildGetError)?.get();
+    let channel_id = ctx.channel_id();
+    let channel_id_u64 = channel_id.get();
+
+    let webhook_url = create_webhook_url(ctx).await?;
+
+    let times_repository = ctx.data().times_repository.clone();
+
+    let time = repository::UtTime::new(
+        user_id,
+        guild_id,
+        user_name.clone(),
+        channel_id.get(),
+        webhook_url.clone(),
+    );
+    let old_time = times_repository.upsert_time(time).await?;
+    info!(
+        "new times set complete. guild_id: {}, user_id: {}, channel_id: {}",
+        guild_id, user_id, channel_id_u64
+    );
+
+    // 古いwebhookを削除
+    let old_webhook_url = old_time.webhook_url;
+    let webhook = Webhook::from_url(ctx, &old_webhook_url).await?;
+    webhook.delete(ctx).await?;
+
+    info!("Webhook deleted: {}", old_webhook_url);
+
+    ctx.say("Success! I learned that this channel is your Times!")
+        .await?;
     Ok(())
 }

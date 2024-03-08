@@ -69,15 +69,18 @@ impl TimesRepository for PostgresTimesRepository {
     type Error = PostgresTimesRepositoryError;
 
     #[instrument(skip(self))]
-    async fn upsert_time(&self, time: UtTime) -> Result<(), Self::Error> {
+    async fn upsert_time(&self, time: UtTime) -> Result<UtTime, Self::Error> {
         let postgres_time = PostgresUtTime::from(time);
 
-        sqlx::query!(
+        // 衝突した場合は，前の値を取得したあとに新しい値で更新する
+        let postgres_time = sqlx::query_as!(
+            PostgresUtTime,
             r#"
             INSERT INTO times (user_id, guild_id, user_name, channel_id, webhook_url)
             VALUES ($1, $2, $3, $4, $5)
             ON CONFLICT (user_id, guild_id) DO UPDATE
             SET user_name = $3, channel_id = $4, webhook_url = $5
+            RETURNING user_id, guild_id, user_name, channel_id, webhook_url
             "#,
             postgres_time.user_id,
             postgres_time.guild_id,
@@ -85,15 +88,15 @@ impl TimesRepository for PostgresTimesRepository {
             postgres_time.channel_id,
             postgres_time.webhook_url
         )
-        .execute(&self.pool)
+        .fetch_one(&self.pool)
         .await?;
 
         info!(
-            "time upserted successfully in postgres. user_id: {}, guild_id: {}",
-            postgres_time.user_id, postgres_time.guild_id
+            "time upserted successfully in postgres. user_id: {}, guild_id: {}. rerurned: {:?}",
+            postgres_time.user_id, postgres_time.guild_id, postgres_time
         );
 
-        Ok(())
+        Ok(postgres_time.into())
     }
 
     /// user_idと一致するTimeをすべて取得する
@@ -272,7 +275,7 @@ mod tests {
 
     #[tokio::test]
     /// 複数のtimeを入れた場合，正しく取り出せるかどうかを確認する
-    async fn test_get_times() {
+    async fn test_gets_times() {
         dotenv().ok();
 
         let pool = PgPoolOptions::new()
@@ -316,7 +319,15 @@ mod tests {
         repository.upsert_time(time_2.clone()).await.unwrap();
 
         let times = repository.get_times(user_id).await.unwrap();
-        assert_eq!(times, vec![time_1, time_2]);
+
+        // ２つのベクタを順序に依存せずに比較するためにソートする
+        let mut times = times;
+        times.sort_by(|a, b| a.guild_id.cmp(&b.guild_id));
+
+        let mut expected_times = vec![time_1, time_2];
+        expected_times.sort_by(|a, b| a.guild_id.cmp(&b.guild_id));
+
+        assert_eq!(times, expected_times);
     }
 
     #[tokio::test]
@@ -410,5 +421,48 @@ mod tests {
             .unwrap();
         let times = repository.get_time(time.user_id, time.guild_id).await;
         assert!(times.is_err());
+    }
+
+    // upsertで衝突した際に戻ってくる値が正しいかどうかを確認する
+    #[tokio::test]
+    async fn test_upsert_conflict() {
+        dotenv().ok();
+
+        let pool = PgPoolOptions::new()
+            .connect(&env::var("DATABASE_URL").expect("DATABASE_URL must be set"))
+            .await
+            .unwrap();
+
+        let user_id = generate_random_20_digits();
+        let guild_id = generate_random_20_digits();
+        let channel_id = generate_random_20_digits();
+
+        // 20桁の数値を格納できるかどうか確認するため
+        let time = UtTime {
+            user_id,
+            guild_id,
+            user_name: "user_name".to_string(),
+            channel_id,
+            webhook_url: "webhook_url".to_string(),
+        };
+
+        let times = vec![time.clone()];
+
+        // 外部キー制約の都合，guildsテーブルにもデータを入れる必要がある
+        // そのための処理
+        setup_guilds_from_times(&pool, times).await;
+
+        let repository = PostgresTimesRepository::new(pool);
+
+        repository.upsert_time(time.clone()).await.unwrap();
+        let time_2 = UtTime {
+            user_id,
+            guild_id,
+            user_name: "user_name_2".to_string(),
+            channel_id,
+            webhook_url: "webhook_url_2".to_string(),
+        };
+        let time = repository.upsert_time(time_2.clone()).await.unwrap();
+        assert_eq!(time, time_2);
     }
 }

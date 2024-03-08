@@ -10,6 +10,7 @@ use sqlx::{Executor, FromRow, PgPool};
 
 mod commands;
 mod models;
+mod webhook_creator;
 
 use commands::hello;
 use models::Data;
@@ -34,10 +35,10 @@ async fn main(
         .get("DISCORD_TOKEN")
         .context("'DISCORD_TOKEN' was not found")?;
 
-    use commands::{hello, help, ut_c_guild_init};
+    use commands::{hello, help, ut_c_guild_init, ut_c_times_set};
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![hello(), ut_c_guild_init(), help()],
+            commands: vec![hello(), help(), ut_c_guild_init(), ut_c_times_set()],
             ..Default::default()
         })
         .setup(|ctx, _ready, framework| {
