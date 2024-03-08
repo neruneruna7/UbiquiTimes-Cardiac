@@ -1,5 +1,6 @@
 use anyhow::Context as _;
 use poise::serenity_prelude::{ClientBuilder, GatewayIntents};
+use shuttle_runtime::CustomError;
 use shuttle_secrets::SecretStore;
 use shuttle_serenity::ShuttleSerenity;
 use sqlx::{Executor, FromRow, PgPool};
@@ -21,6 +22,13 @@ async fn main(
     #[shuttle_secrets::Secrets] secret_store: SecretStore,
     #[shuttle_shared_db::Postgres] pool: PgPool,
 ) -> ShuttleSerenity {
+    // dbのセットアップ
+    // Create the tables if they don't exist yet
+
+    pool.execute(include_str!("../../db/schema.sql"))
+        .await
+        .map_err(CustomError::new)?;
+
     // Get the discord token set in `Secrets.toml`
     let discord_token = secret_store
         .get("DISCORD_TOKEN")
