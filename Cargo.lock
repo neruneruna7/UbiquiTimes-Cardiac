@@ -1772,6 +1772,7 @@ dependencies = [
  "serde",
  "sqlx",
  "thiserror",
+ "tracing",
 ]
 
 [[package]]

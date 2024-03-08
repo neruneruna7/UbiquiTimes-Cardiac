@@ -23,14 +23,13 @@ pub trait TimesRepository {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UtGuild {
     pub guild_id: u64,
-    pub guild_name: String,
+    pub guild_name: Option<String>,
 }
 
 pub trait GuildRepository {
     // ここはErrorではなくResultでもいいのだが，Errorに着目するためあえ今回はこの形をとっている
     type Error;
-    async fn add_guild(&self, guild: UtGuild) -> Result<(), Self::Error>;
-    async fn update_guild(&self, guild: UtGuild) -> Result<(), Self::Error>;
+    async fn upsert_guild(&self, guild: UtGuild) -> Result<(), Self::Error>;
     async fn get_guild(&self, guild_id: u64) -> Result<UtGuild, Self::Error>;
     async fn delete_guild(&self, guild_id: u64) -> Result<(), Self::Error>;
 }
