@@ -16,9 +16,9 @@ CREATE TABLE IF NOT EXISTS Guilds (
 CREATE TABLE IF NOT EXISTS Times (
     user_id NUMERIC(20) NOT NULL,
     guild_id NUMERIC(20) NOT NULL,
-    user_name VARCHAR(255),
-    channel_id NUMERIC(20),
-    webhook_url TEXT,
+    user_name VARCHAR(255) NOT NULL,
+    channel_id NUMERIC(20) NOT NULL,
+    webhook_url TEXT NOT NULL,
     PRIMARY KEY (user_id, guild_id),
     FOREIGN KEY (guild_id) REFERENCES Guilds(guild_id)
 );

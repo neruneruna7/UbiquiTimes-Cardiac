@@ -6,18 +6,17 @@ use sqlx::FromRow;
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct UtTime {
     pub user_id: u64,
-    pub user_name: String,
     pub guild_id: u64,
+    pub user_name: String,
     pub channel_id: u64,
-    pub webhook_url: u64,
+    pub webhook_url: String,
 }
 
 pub trait TimesRepository {
     type Error;
-    fn add_time(&self, time: UtTime) -> Result<(), Self::Error>;
-    fn update_time(&self, time: UtTime) -> Result<(), Self::Error>;
-    fn get_times(&self, user_id: u64, guild_id: u64) -> Result<Vec<UtTime>, Self::Error>;
-    fn delete_time(&self, user_id: u64, guild_id: u64) -> Result<(), Self::Error>;
+    async fn upsert_time(&self, time: UtTime) -> Result<(), Self::Error>;
+    async fn get_times(&self, user_id: u64, guild_id: u64) -> Result<Vec<UtTime>, Self::Error>;
+    async fn delete_time(&self, user_id: u64, guild_id: u64) -> Result<(), Self::Error>;
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

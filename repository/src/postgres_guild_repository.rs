@@ -34,6 +34,18 @@ impl From<UtGuild> for PostgresUtGuild {
         }
     }
 }
+
+// PostgresUtGuildをUtGuildに変換する
+
+impl From<PostgresUtGuild> for UtGuild {
+    fn from(p: PostgresUtGuild) -> Self {
+        Self {
+            guild_id: p.guild_id.digits(),
+            guild_name: p.guild_name,
+        }
+    }
+}
+
 pub struct PostgresGuildRepository {
     pool: PgPool,
 }
@@ -50,7 +62,7 @@ impl GuildRepository for PostgresGuildRepository {
     #[instrument(skip(self))]
     async fn upsert_guild(&self, guild: UtGuild) -> Result<(), Self::Error> {
         let postgres_guild = PostgresUtGuild::from(guild);
-        // 正しく動くのかどうか確認するためだけのクエリ
+
         sqlx::query!(
             r#"
             INSERT INTO guilds (guild_id, guild_name)
@@ -92,10 +104,7 @@ impl GuildRepository for PostgresGuildRepository {
             guild.guild_name.as_deref().unwrap_or("None")
         );
 
-        Ok(UtGuild {
-            guild_id: guild.guild_id.to_string().parse().unwrap(),
-            guild_name: guild.guild_name,
-        })
+        Ok(guild.into())
     }
 
     #[instrument(skip(self))]
