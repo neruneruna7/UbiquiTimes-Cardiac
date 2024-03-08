@@ -40,7 +40,7 @@ impl From<UtGuild> for PostgresUtGuild {
 impl From<PostgresUtGuild> for UtGuild {
     fn from(p: PostgresUtGuild) -> Self {
         Self {
-            guild_id: p.guild_id.digits(),
+            guild_id: p.guild_id.to_string().parse().unwrap(),
             guild_name: p.guild_name,
         }
     }
@@ -136,6 +136,9 @@ mod tests {
     use sqlx::postgres::PgPoolOptions;
     use std::env;
 
+    #[cfg(test)]
+    use crate::test_utils::generate_random_20_digits;
+
     #[tokio::test]
     async fn test_upsert_guild() {
         dotenv().ok();
@@ -146,9 +149,10 @@ mod tests {
             .unwrap();
         let repository = PostgresGuildRepository::new(pool);
 
+        let guild_id = generate_random_20_digits();
         let guild = UtGuild {
             // 20桁の数値を格納できるかどうか確認するため
-            guild_id: 10101010101010100101,
+            guild_id,
             guild_name: Some("test_guild".to_string()),
         };
 
@@ -166,8 +170,10 @@ mod tests {
             .unwrap();
         let repository = PostgresGuildRepository::new(pool);
 
+        let guild_id = generate_random_20_digits();
+
         let guild = UtGuild {
-            guild_id: 10101010101010100101,
+            guild_id,
             guild_name: Some("test_guild".to_string()),
         };
 
@@ -187,8 +193,10 @@ mod tests {
             .unwrap();
         let repository = PostgresGuildRepository::new(pool);
 
+        let guild_id = generate_random_20_digits();
+
         let guild = UtGuild {
-            guild_id: 123,
+            guild_id,
             guild_name: Some("test_guild".to_string()),
         };
 
