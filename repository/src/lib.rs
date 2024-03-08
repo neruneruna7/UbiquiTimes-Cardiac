@@ -1,14 +1,16 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+pub mod postgres_guild_repository;
+pub mod postgres_times_repository;
+pub mod traits;
 
 #[cfg(test)]
-mod tests {
-    use super::*;
+mod test_utils {
+    use rand::Rng;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+    // ランダムな20桁の数値を生成する
+    // discordの各種idが20桁の数値であるため，それに合わせる
+    pub(crate) fn generate_random_20_digits() -> u64 {
+        let mut rng = rand::thread_rng();
+        let random_20_digits = rng.gen_range(10000000000000000000..=u64::MAX);
+        random_20_digits
     }
 }
