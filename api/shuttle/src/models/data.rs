@@ -1,0 +1,11 @@
+use repository::postgres_guild_repository::PostgresGuildRepository;
+use repository::postgres_times_repository::PostgresTimesRepository;
+use sqlx::PgPool;
+
+// User data, which is stored and accessible in all command invocations
+// #[derive(Debug)]
+pub(crate) struct Data {
+    pub pool: PgPool,
+    pub guild_repository: PostgresGuildRepository,
+    pub times_repository: PostgresTimesRepository,
+}

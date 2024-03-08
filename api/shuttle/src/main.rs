@@ -1,21 +1,19 @@
 use anyhow::Context as _;
+use poise::serenity_prelude::model::guild;
 use poise::serenity_prelude::{ClientBuilder, GatewayIntents};
 use shuttle_runtime::CustomError;
 use shuttle_secrets::SecretStore;
 use shuttle_serenity::ShuttleSerenity;
 use sqlx::{Executor, FromRow, PgPool};
-struct Data {
-    pool: PgPool,
-} // User data, which is stored and accessible in all command invocations
-type Error = Box<dyn std::error::Error + Send + Sync>;
-type Context<'a> = poise::Context<'a, Data, Error>;
 
-/// Responds with "world!"
-#[poise::command(slash_command)]
-async fn hello(ctx: Context<'_>) -> Result<(), Error> {
-    ctx.say("world!").await?;
-    Ok(())
-}
+mod commands;
+mod models;
+
+use commands::hello;
+use models::Data;
+
+use repository::postgres_guild_repository::PostgresGuildRepository;
+use repository::postgres_times_repository::PostgresTimesRepository;
 
 #[shuttle_runtime::main]
 async fn main(
@@ -40,9 +38,17 @@ async fn main(
             ..Default::default()
         })
         .setup(|ctx, _ready, framework| {
+            // poolをcloneしてもよいのだろうか？
+            // 不明である
+            let guild_repository = PostgresGuildRepository::new(pool.clone());
+            let times_repository = PostgresTimesRepository::new(pool.clone());
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                Ok(Data { pool })
+                Ok(Data {
+                    pool,
+                    guild_repository,
+                    times_repository,
+                })
             })
         })
         .build();

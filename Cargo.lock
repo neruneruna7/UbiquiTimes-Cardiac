@@ -3092,12 +3092,14 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "poise",
+ "repository",
  "serde",
  "shuttle-runtime",
  "shuttle-secrets",
  "shuttle-serenity",
  "shuttle-shared-db",
  "sqlx",
+ "thiserror",
  "tokio",
  "tracing",
 ]
