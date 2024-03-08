@@ -12,6 +12,24 @@ pub struct UtTime {
     pub webhook_url: String,
 }
 
+impl UtTime {
+    pub fn new(
+        user_id: u64,
+        guild_id: u64,
+        user_name: String,
+        channel_id: u64,
+        webhook_url: String,
+    ) -> Self {
+        Self {
+            user_id,
+            guild_id,
+            user_name,
+            channel_id,
+            webhook_url,
+        }
+    }
+}
+
 pub trait TimesRepository {
     type Error;
     async fn upsert_time(&self, time: UtTime) -> Result<(), Self::Error>;
@@ -24,6 +42,15 @@ pub trait TimesRepository {
 pub struct UtGuild {
     pub guild_id: u64,
     pub guild_name: Option<String>,
+}
+
+impl UtGuild {
+    pub fn new(guild_id: u64, guild_name: Option<String>) -> Self {
+        Self {
+            guild_id,
+            guild_name,
+        }
+    }
 }
 
 pub trait GuildRepository {

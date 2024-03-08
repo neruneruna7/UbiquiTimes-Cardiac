@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use anyhow::Context as _;
 use poise::serenity_prelude::model::guild;
 use poise::serenity_prelude::{ClientBuilder, GatewayIntents};
@@ -32,16 +34,17 @@ async fn main(
         .get("DISCORD_TOKEN")
         .context("'DISCORD_TOKEN' was not found")?;
 
+    use commands::{hello, help, ut_c_guild_init};
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![hello()],
+            commands: vec![hello(), ut_c_guild_init(), help()],
             ..Default::default()
         })
         .setup(|ctx, _ready, framework| {
             // poolをcloneしてもよいのだろうか？
             // 不明である
-            let guild_repository = PostgresGuildRepository::new(pool.clone());
-            let times_repository = PostgresTimesRepository::new(pool.clone());
+            let guild_repository = Arc::new(PostgresGuildRepository::new(pool.clone()));
+            let times_repository = Arc::new(PostgresTimesRepository::new(pool.clone()));
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
                 Ok(Data {

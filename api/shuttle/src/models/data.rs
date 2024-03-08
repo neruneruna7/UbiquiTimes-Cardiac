@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use repository::postgres_guild_repository::PostgresGuildRepository;
 use repository::postgres_times_repository::PostgresTimesRepository;
 use sqlx::PgPool;
@@ -6,6 +8,6 @@ use sqlx::PgPool;
 // #[derive(Debug)]
 pub(crate) struct Data {
     pub pool: PgPool,
-    pub guild_repository: PostgresGuildRepository,
-    pub times_repository: PostgresTimesRepository,
+    pub guild_repository: Arc<PostgresGuildRepository>,
+    pub times_repository: Arc<PostgresTimesRepository>,
 }
