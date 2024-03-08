@@ -3,7 +3,7 @@ use sqlx::FromRow;
 
 // FromRowをここでつけておく
 // 薄いラッパ(ニュータイプパターン)を使えば，ここでなくて具体的にやってる側で書けるかも？
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct UtTime {
     pub user_id: u64,
     pub user_name: String,
@@ -20,7 +20,7 @@ pub trait TimesRepository {
     fn delete_time(&self, user_id: u64, guild_id: u64) -> Result<(), Self::Error>;
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct UtGuild {
     pub guild_id: u64,
     pub guild_name: Option<String>,
