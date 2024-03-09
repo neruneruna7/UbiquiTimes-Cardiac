@@ -1,10 +1,4 @@
-use crate::repository::UtTime;
-
-#[derive(Debug, Clone)]
-pub struct TimesMessage {
-    pub avater_url: String,
-    pub content: String,
-}
+use crate::models::{TimesMessage, UtTime};
 
 pub trait TimesMessageSender {
     type Error;

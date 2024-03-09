@@ -1,32 +1,4 @@
-// FromRowをここでつけておく
-// 薄いラッパ(ニュータイプパターン)を使えば，ここでなくて具体的にやってる側で書けるかも？
-// FromRowをここでつけるのは不要となった
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UtTime {
-    pub user_id: u64,
-    pub guild_id: u64,
-    pub user_name: String,
-    pub channel_id: u64,
-    pub webhook_url: String,
-}
-
-impl UtTime {
-    pub fn new(
-        user_id: u64,
-        guild_id: u64,
-        user_name: String,
-        channel_id: u64,
-        webhook_url: String,
-    ) -> Self {
-        Self {
-            user_id,
-            guild_id,
-            user_name,
-            channel_id,
-            webhook_url,
-        }
-    }
-}
+use crate::models::{UtGuild, UtTime};
 
 pub trait TimesRepository {
     type Error;
@@ -34,21 +6,6 @@ pub trait TimesRepository {
     async fn get_time(&self, user_id: u64, guild_id: u64) -> Result<UtTime, Self::Error>;
     async fn get_times(&self, user_id: u64) -> Result<Vec<UtTime>, Self::Error>;
     async fn delete_time(&self, user_id: u64, guild_id: u64) -> Result<(), Self::Error>;
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct UtGuild {
-    pub guild_id: u64,
-    pub guild_name: Option<String>,
-}
-
-impl UtGuild {
-    pub fn new(guild_id: u64, guild_name: Option<String>) -> Self {
-        Self {
-            guild_id,
-            guild_name,
-        }
-    }
 }
 
 pub trait GuildRepository {
