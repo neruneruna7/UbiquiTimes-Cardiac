@@ -1,4 +1,4 @@
-use repository::UtTime;
+use crate::repository::UtTime;
 
 #[derive(Debug, Clone)]
 pub struct TimesMessage {
