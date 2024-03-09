@@ -1,3 +1,5 @@
+use domain::models::UtGuild;
+use domain::repository::GuildRepository;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -7,8 +9,6 @@ use sqlx::Error as SqlxError;
 
 // tracingもロギングも全く理解していないことだらけだが，とりあえず使ってみる
 use tracing::{info, instrument};
-
-use crate::traits::{GuildRepository, UtGuild};
 
 #[derive(Error, Debug)]
 pub enum PostgresGuildRepositoryError {
@@ -131,7 +131,7 @@ impl GuildRepository for PostgresGuildRepository {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::traits::GuildRepository;
+    use domain::models::UtGuild;
     use dotenvy::dotenv;
     use sqlx::postgres::PgPoolOptions;
     use std::env;

@@ -21,8 +21,12 @@
 use crate::models::error::{GuildGetError, UserGetError};
 use crate::models::{Context, Data, UbiquiTimesCardiacResult as Result};
 use crate::webhook_creator::create_webhook_url;
+use domain::models::UtTime;
+use domain::{
+    models::UtGuild,
+    repository::{GuildRepository, TimesRepository},
+};
 use poise::serenity_prelude::{ChannelId, CreateWebhook, Webhook};
-use repository::traits::{GuildRepository, TimesRepository};
 use tracing::info;
 
 /// Responds with "world!"
@@ -65,7 +69,7 @@ pub async fn ut_c_guild_init(ctx: Context<'_>) -> Result<()> {
     let guild_name = ctx.guild().ok_or(GuildGetError)?.name.clone();
 
     let guilds_repository = ctx.data().guild_repository.clone();
-    let guild = repository::UtGuild::new(guild_id, Some(guild_name.clone()));
+    let guild = UtGuild::new(guild_id, Some(guild_name.clone()));
     guilds_repository.upsert_guild(guild).await?;
 
     ctx.say(format!(
@@ -94,7 +98,7 @@ pub async fn ut_c_times_set(
 
     let times_repository = ctx.data().times_repository.clone();
 
-    let time = repository::UtTime::new(
+    let time = UtTime::new(
         user_id,
         guild_id,
         user_name.clone(),

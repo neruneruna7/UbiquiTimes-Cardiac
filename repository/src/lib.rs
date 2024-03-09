@@ -1,8 +1,5 @@
 pub mod postgres_guild_repository;
 pub mod postgres_times_repository;
-pub mod traits;
-
-pub use traits::{UtGuild, UtTime};
 
 #[cfg(test)]
 mod test_utils {

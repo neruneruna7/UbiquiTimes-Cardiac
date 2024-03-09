@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
 members = [
-    "api/shuttle",
+    "api/shuttle", "domain", "message_sender",
     "repository",
 ]

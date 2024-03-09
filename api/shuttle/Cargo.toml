@@ -20,4 +20,5 @@ serde = {version = "*", features = ["derive"]}
 
 thiserror = "1.0"
 
+domain = { path = "../../domain"}
 repository ={ path = "../../repository"}
