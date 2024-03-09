@@ -63,16 +63,16 @@ impl GuildRepository for PostgresGuildRepository {
     async fn upsert_guild(&self, guild: UtGuild) -> Result<(), Self::Error> {
         let postgres_guild = PostgresUtGuild::from(guild);
 
-        sqlx::query!(
+        sqlx::query(
             r#"
             INSERT INTO guilds (guild_id, guild_name)
             VALUES ($1, $2)
             ON CONFLICT (guild_id) DO UPDATE
             SET guild_name = $2
             "#,
-            postgres_guild.guild_id,
-            postgres_guild.guild_name
         )
+        .bind(&postgres_guild.guild_id)
+        .bind(&postgres_guild.guild_name)
         .execute(&self.pool)
         .await?;
 
@@ -86,15 +86,14 @@ impl GuildRepository for PostgresGuildRepository {
     #[instrument(skip(self))]
     async fn get_guild(&self, guild_id: u64) -> Result<UtGuild, Self::Error> {
         let bigdecimal_guild_id = BigDecimal::from(guild_id);
-        let guild = sqlx::query_as!(
-            PostgresUtGuild,
+        let guild: PostgresUtGuild = sqlx::query_as(
             r#"
             SELECT guild_id, guild_name
             FROM guilds
             WHERE guild_id = $1
             "#,
-            bigdecimal_guild_id
         )
+        .bind(bigdecimal_guild_id)
         .fetch_one(&self.pool)
         .await?;
 
@@ -110,13 +109,13 @@ impl GuildRepository for PostgresGuildRepository {
     #[instrument(skip(self))]
     async fn delete_guild(&self, guild_id: u64) -> Result<(), Self::Error> {
         let bigdecimal_guild_id = BigDecimal::from(guild_id);
-        sqlx::query!(
+        sqlx::query(
             r#"
             DELETE FROM guilds
             WHERE guild_id = $1
             "#,
-            bigdecimal_guild_id
         )
+        .bind(bigdecimal_guild_id)
         .execute(&self.pool)
         .await?;
 
@@ -128,5 +127,5 @@ impl GuildRepository for PostgresGuildRepository {
     }
 }
 
-// #[cfg(test)]
-// mod tests;
+#[cfg(test)]
+mod tests;

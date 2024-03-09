@@ -81,16 +81,15 @@ impl TimesRepository for PostgresTimesRepository {
         // トランザクションを実際のコード中でどう扱えばいいのかよくわからない
         let mut tx = self.pool.begin().await?;
 
-        let old_time = sqlx::query_as!(
-            PostgresUtTime,
+        let old_time: Option<PostgresUtTime> = sqlx::query_as(
             r#"
             SELECT user_id, guild_id, user_name, channel_id, webhook_url
             FROM times
             WHERE user_id = $1 AND guild_id = $2
             "#,
-            postgres_time.user_id,
-            postgres_time.guild_id
         )
+        .bind(&postgres_time.user_id)
+        .bind(&postgres_time.guild_id)
         .fetch_optional(&mut *tx)
         .await?;
 
@@ -98,7 +97,7 @@ impl TimesRepository for PostgresTimesRepository {
         // 明示しなくても自動でロールバックされるのだろうか
 
         // 衝突した場合は，前の値を取得したあとに新しい値で更新する
-        sqlx::query!(
+        sqlx::query(
             r#"
             INSERT INTO times (user_id, guild_id, user_name, channel_id, webhook_url)
             VALUES ($1, $2, $3, $4, $5)
@@ -106,12 +105,12 @@ impl TimesRepository for PostgresTimesRepository {
             SET user_name = $3, channel_id = $4, webhook_url = $5
 
             "#,
-            postgres_time.user_id,
-            postgres_time.guild_id,
-            postgres_time.user_name,
-            postgres_time.channel_id,
-            postgres_time.webhook_url
         )
+        .bind(&postgres_time.user_id)
+        .bind(&postgres_time.guild_id)
+        .bind(&postgres_time.user_name)
+        .bind(&postgres_time.channel_id)
+        .bind(&postgres_time.webhook_url)
         .execute(&mut *tx)
         .await?;
 
@@ -120,42 +119,6 @@ impl TimesRepository for PostgresTimesRepository {
             "time upserted successfully in postgres. user_id: {}, guild_id: {}. rerurned: {:?}",
             postgres_time.user_id, postgres_time.guild_id, postgres_time
         );
-
-        // let old_time = sqlx::query_as!(
-        //     PostgresUtTime,
-        //     r#"
-        //     SELECT user_id, guild_id, user_name, channel_id, webhook_url
-        //     FROM times
-        //     WHERE user_id = $1 AND guild_id = $2
-        //     "#,
-        //     postgres_time.user_id,
-        //     postgres_time.guild_id
-        // )
-        // .fetch_optional(&self.pool)
-        // .await?;
-
-        // // 衝突した場合は，前の値を取得したあとに新しい値で更新する
-        // sqlx::query!(
-        //     r#"
-        //     INSERT INTO times (user_id, guild_id, user_name, channel_id, webhook_url)
-        //     VALUES ($1, $2, $3, $4, $5)
-        //     ON CONFLICT (user_id, guild_id) DO UPDATE
-        //     SET user_name = $3, channel_id = $4, webhook_url = $5
-
-        //     "#,
-        //     postgres_time.user_id,
-        //     postgres_time.guild_id,
-        //     postgres_time.user_name,
-        //     postgres_time.channel_id,
-        //     postgres_time.webhook_url
-        // )
-        // .execute(&self.pool)
-        // .await?;
-
-        // info!(
-        //     "time upserted successfully in postgres. user_id: {}, guild_id: {}. rerurned: {:?}",
-        //     postgres_time.user_id, postgres_time.guild_id, postgres_time
-        // );
 
         if let Some(old_time) = old_time {
             Ok(Some(old_time.into()))
@@ -167,15 +130,14 @@ impl TimesRepository for PostgresTimesRepository {
     /// user_idと一致するTimeをすべて取得する
     async fn get_times(&self, user_id: u64) -> Result<Vec<UtTime>, Self::Error> {
         let bigdecimal_user_id = BigDecimal::from(user_id);
-        let times = sqlx::query_as!(
-            PostgresUtTime,
+        let times: Vec<PostgresUtTime> = sqlx::query_as(
             r#"
             SELECT user_id, guild_id, user_name, channel_id, webhook_url
             FROM times
             WHERE user_id = $1
             "#,
-            bigdecimal_user_id,
         )
+        .bind(bigdecimal_user_id)
         .fetch_all(&self.pool)
         .await?;
 
@@ -193,14 +155,14 @@ impl TimesRepository for PostgresTimesRepository {
         let bigdecimal_user_id = BigDecimal::from(user_id);
         let bigdecimal_guild_id = BigDecimal::from(guild_id);
 
-        sqlx::query!(
+        sqlx::query(
             r#"
             DELETE FROM times
             WHERE user_id = $1 AND guild_id = $2
             "#,
-            bigdecimal_user_id,
-            bigdecimal_guild_id
         )
+        .bind(bigdecimal_user_id)
+        .bind(bigdecimal_guild_id)
         .execute(&self.pool)
         .await?;
 
@@ -216,16 +178,15 @@ impl TimesRepository for PostgresTimesRepository {
     async fn get_time(&self, user_id: u64, guild_id: u64) -> Result<UtTime, Self::Error> {
         let bigdecimal_user_id = BigDecimal::from(user_id);
         let bigdecimal_guild_id = BigDecimal::from(guild_id);
-        let time = sqlx::query_as!(
-            PostgresUtTime,
+        let time: PostgresUtTime = sqlx::query_as(
             r#"
             SELECT user_id, guild_id, user_name, channel_id, webhook_url
             FROM times
             WHERE user_id = $1 AND guild_id = $2
             "#,
-            bigdecimal_user_id,
-            bigdecimal_guild_id
         )
+        .bind(bigdecimal_user_id)
+        .bind(bigdecimal_guild_id)
         .fetch_one(&self.pool)
         .await?;
 
@@ -238,5 +199,5 @@ impl TimesRepository for PostgresTimesRepository {
     }
 }
 
-// #[cfg(test)]
-// mod tests;
+#[cfg(test)]
+mod tests;
