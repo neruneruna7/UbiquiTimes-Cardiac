@@ -84,12 +84,11 @@ async fn main(
             // poolをcloneしてもよいのだろうか？
             // 不明である
             let guild_repository = Arc::new(PostgresGuildRepository::new(pool.clone()));
-            let times_repository = Arc::new(PostgresTimesRepository::new(pool.clone()));
+            let times_repository = Arc::new(PostgresTimesRepository::new(pool));
             let times_message_sender = Arc::new(PoiseWebhookMessageSender::new());
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
                 Ok(Data {
-                    pool,
                     guild_repository,
                     times_repository,
                     times_message_sender,

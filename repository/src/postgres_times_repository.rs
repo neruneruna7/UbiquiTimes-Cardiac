@@ -3,7 +3,7 @@ use domain::repository::TimesRepository;
 
 use thiserror::Error;
 
-use sqlx::{types::BigDecimal, Executor, FromRow, PgPool};
+use sqlx::{types::BigDecimal, FromRow, PgPool};
 
 use sqlx::Error as SqlxError;
 
