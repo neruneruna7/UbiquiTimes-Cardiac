@@ -1,3 +1,5 @@
+use domain::models::UtTime;
+use domain::repository::TimesRepository;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -7,8 +9,6 @@ use sqlx::Error as SqlxError;
 
 // tracingもロギングも全く理解していないことだらけだが，とりあえず使ってみる
 use tracing::{info, instrument};
-
-use crate::traits::{TimesRepository, UtTime};
 
 #[derive(Error, Debug)]
 pub enum PostgresTimesRepositoryError {
@@ -177,11 +177,8 @@ impl TimesRepository for PostgresTimesRepository {
 mod tests {
     // 外部キー制約の都合，guildsテーブルにもデータを入れる必要がある
     use super::*;
-    use crate::{
-        postgres_guild_repository::PostgresGuildRepository,
-        traits::{GuildRepository as _, UtGuild},
-    };
-    use core::time;
+    use crate::postgres_guild_repository::PostgresGuildRepository;
+    use domain::{models::UtGuild, repository::GuildRepository};
     use dotenvy::dotenv;
     use sqlx::{postgres::PgPoolOptions, PgPool};
     use std::env;

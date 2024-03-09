@@ -1210,8 +1210,8 @@ checksum = "523dc4f511e55ab87b694dc30d0f820d60906ef06413f93d4d7a1385599cc149"
 name = "message_sender"
 version = "0.1.0"
 dependencies = [
+ "domain",
  "poise",
- "repository",
  "thiserror",
  "tracing",
 ]
@@ -1774,6 +1774,7 @@ checksum = "c08c74e62047bb2de4ff487b251e4a92e24f48745648451635cec7d591162d9f"
 name = "repository"
 version = "0.1.0"
 dependencies = [
+ "domain",
  "dotenvy",
  "num-bigint",
  "rand",
@@ -3097,6 +3098,7 @@ name = "ubiquitimes-cardiac"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "domain",
  "poise",
  "repository",
  "serde",

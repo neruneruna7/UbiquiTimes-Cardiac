@@ -10,6 +10,8 @@ thiserror = "1.0"
 poise = "*"
 tracing = "*"
 
-# これめんどいなというか，好ましくないな
-# なるほど，Domainとやらに切り出すのはそういうわけか...
-repository = {path = "../repository"}
+# # これめんどいなというか，好ましくないな
+# # なるほど，Domainとやらに切り出すのはそういうわけか...
+# repository = {path = "../repository"}
+
+domain = {path = "../domain"}

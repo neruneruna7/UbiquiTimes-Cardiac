@@ -1,8 +1,10 @@
+use domain::{
+    message_sender::TimesMessageSender,
+    models::{TimesMessage, UtTime},
+};
 use poise::serenity_prelude::{ExecuteWebhook, Http, Webhook};
 use thiserror::Error;
 use tracing::info;
-
-use crate::traits::{TimesMessage, TimesMessageSender};
 
 #[derive(Debug, Error)]
 pub enum PoiseWebhookMessageSenderError {
@@ -23,11 +25,7 @@ impl TimesMessageSender for PoiseWebhookMessageSender {
     type Error = PoiseWebhookMessageSenderError;
 
     #[tracing::instrument(skip(self))]
-    async fn send_all(
-        &self,
-        message: TimesMessage,
-        times: Vec<repository::UtTime>,
-    ) -> Result<(), Self::Error> {
+    async fn send_all(&self, message: TimesMessage, times: Vec<UtTime>) -> Result<(), Self::Error> {
         // Webhookを送るだけなら，トークンとやらはなしでもいいらしい
         let http = Http::new("");
 
