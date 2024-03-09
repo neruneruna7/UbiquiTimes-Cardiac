@@ -3099,6 +3099,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "domain",
+ "message_sender",
  "poise",
  "repository",
  "serde",

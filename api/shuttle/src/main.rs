@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use anyhow::Context as _;
+use message_sender::poise_webhook_message_sender::PoiseWebhookMessageSender;
 use poise::serenity_prelude::model::guild;
 use poise::serenity_prelude::{ClientBuilder, GatewayIntents};
 use shuttle_runtime::CustomError;
@@ -46,12 +47,14 @@ async fn main(
             // 不明である
             let guild_repository = Arc::new(PostgresGuildRepository::new(pool.clone()));
             let times_repository = Arc::new(PostgresTimesRepository::new(pool.clone()));
+            let times_message_sender = Arc::new(PoiseWebhookMessageSender::new());
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
                 Ok(Data {
                     pool,
                     guild_repository,
                     times_repository,
+                    times_message_sender,
                 })
             })
         })

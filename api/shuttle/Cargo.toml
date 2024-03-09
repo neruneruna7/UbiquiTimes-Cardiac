@@ -22,3 +22,4 @@ thiserror = "1.0"
 
 domain = { path = "../../domain"}
 repository ={ path = "../../repository"}
+message_sender = { path = "../../message_sender"}

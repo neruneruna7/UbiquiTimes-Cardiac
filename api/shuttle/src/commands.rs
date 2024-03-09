@@ -21,8 +21,9 @@
 use crate::models::error::{GuildGetError, UserGetError};
 use crate::models::{Context, Data, UbiquiTimesCardiacResult as Result};
 use crate::webhook_creator::create_webhook_url;
-use domain::models::UtTime;
+use domain::models::{TimesMessage, UtTime};
 use domain::{
+    message_sender::TimesMessageSender,
     models::UtGuild,
     repository::{GuildRepository, TimesRepository},
 };
@@ -80,7 +81,7 @@ pub async fn ut_c_guild_init(ctx: Context<'_>) -> Result<()> {
     Ok(())
 }
 
-#[poise::command(prefix_command, track_edits, aliases("UtSet"), slash_command)]
+#[poise::command(prefix_command, track_edits, aliases("UtTimesSet"), slash_command)]
 #[tracing::instrument(skip(ctx))]
 /// 実行したチャンネルをあなたのTimesとして登録します
 ///
@@ -120,5 +121,45 @@ pub async fn ut_c_times_set(
 
     ctx.say("Success! I learned that this channel is your Times!")
         .await?;
+    Ok(())
+}
+
+#[poise::command(prefix_command, track_edits, aliases("UtTimesDelete"), slash_command)]
+#[tracing::instrument(skip(ctx))]
+/// あなたのTimes情報を削除します
+pub async fn ut_c_times_delete(ctx: Context<'_>) -> Result<()> {
+    let user_id = ctx.author().id.get();
+    let guild_id = ctx.guild_id().ok_or(GuildGetError)?.get();
+
+    let times_repository = ctx.data().times_repository.clone();
+    times_repository.delete_time(user_id, guild_id).await?;
+
+    ctx.say("Success! I forgot your Times!").await?;
+    Ok(())
+}
+
+#[poise::command(prefix_command, track_edits, aliases("UT"), slash_command)]
+#[tracing::instrument(skip(ctx))]
+/// 書き込んだ内容を拡散します
+///
+/// 書き込んだ内容を登録されたギルドのすべてのチャンネルに送信します
+pub async fn ut_c_times_release(
+    ctx: Context<'_>,
+    #[description = "送信する内容"] content: String,
+) -> Result<()> {
+    let times_message = TimesMessage {
+        avater_url: ctx.author().avatar_url().unwrap_or_default(),
+        content: content.clone(),
+    };
+
+    let user_id = ctx.author().id.get();
+
+    let times_repository = ctx.data().times_repository.clone();
+    let times = times_repository.get_times(user_id).await?;
+
+    let message_sender = ctx.data().times_message_sender.clone();
+    message_sender.send_all(times_message, times).await?;
+
+    info!("times release complete. user_id: {}", user_id);
     Ok(())
 }
