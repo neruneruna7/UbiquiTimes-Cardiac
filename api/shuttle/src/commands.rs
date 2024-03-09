@@ -20,6 +20,7 @@
 
 use crate::models::error::{GuildGetError, UserGetError};
 use crate::models::{Context, Data, UbiquiTimesCardiacResult as Result};
+use crate::ubiquitimes_user_name::ubiquitimes_user_name;
 use crate::webhook_name::webhook_name;
 use domain::models::{TimesMessage, UtTime};
 use domain::{
@@ -95,6 +96,9 @@ pub async fn ut_c_times_set(
     let guild_id = ctx.guild_id().ok_or(GuildGetError)?.get();
     let channel_id = ctx.channel_id();
     let channel_id_u64 = channel_id.get();
+
+    // Ubiquitimesから拡散だとわかるように，ユーザー名にプレフィックスを付加する
+    let user_name = ubiquitimes_user_name(user_name);
 
     // チャンネルに存在するwebhookを確認
     // 指定フォーマットの名前のwebhookが存在する場合，そのwebhookのurlを返す
