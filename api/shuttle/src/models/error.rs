@@ -1,4 +1,5 @@
-use poise::serenity_prelude as serenity;
+use message_sender::poise_webhook_message_sender::PoiseWebhookMessageSenderError;
+use poise::serenity_prelude::{self as serenity};
 
 use repository::{
     postgres_guild_repository::PostgresGuildRepositoryError,
@@ -22,6 +23,8 @@ pub enum UbiquiTimesCardiacError {
     GuildGetError(#[from] GuildGetError),
     #[error("user get error: {0}")]
     UserGetError(#[from] UserGetError),
+    #[error("poise webhook message sender error: {0}")]
+    PoiseWebhookMessageSenderError(#[from] PoiseWebhookMessageSenderError),
 }
 
 pub type UbiquiTimesCardiacResult<T> = Result<T, UbiquiTimesCardiacError>;

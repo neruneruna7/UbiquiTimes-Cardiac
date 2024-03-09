@@ -9,7 +9,7 @@ mod test_utils {
     // discordの各種idが20桁の数値であるため，それに合わせる
     pub(crate) fn generate_random_20_digits() -> u64 {
         let mut rng = rand::thread_rng();
-        let random_20_digits = rng.gen_range(10000000000000000000..=u64::MAX);
-        random_20_digits
+
+        rng.gen_range(10000000000000000000..=u64::MAX)
     }
 }

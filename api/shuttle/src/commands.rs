@@ -18,15 +18,17 @@
 // 	- 保存されたTimes情報のchannel_idと一致しない場合，チャンネル不一致として弾く
 // 	- 実行したギルド以外の，Timesが登録されているすべてのギルドへ同じ内容を送信する
 
-use crate::models::error::{GuildGetError, UserGetError};
-use crate::models::{Context, Data, UbiquiTimesCardiacResult as Result};
-use crate::webhook_creator::create_webhook_url;
-use domain::models::UtTime;
+use crate::models::error::GuildGetError;
+use crate::models::{Context, UbiquiTimesCardiacResult as Result};
+use crate::ubiquitimes_user_name::ubiquitimes_user_name;
+use crate::webhook_name::{self, webhook_name};
+use domain::models::{TimesMessage, UtTime};
 use domain::{
+    message_sender::TimesMessageSender,
     models::UtGuild,
     repository::{GuildRepository, TimesRepository},
 };
-use poise::serenity_prelude::{ChannelId, CreateWebhook, Webhook};
+use poise::serenity_prelude::{CreateWebhook, Webhook};
 use tracing::info;
 
 /// Responds with "world!"
@@ -72,15 +74,16 @@ pub async fn ut_c_guild_init(ctx: Context<'_>) -> Result<()> {
     let guild = UtGuild::new(guild_id, Some(guild_name.clone()));
     guilds_repository.upsert_guild(guild).await?;
 
-    ctx.say(format!(
-        "guild_id: {}, guild_name: {}",
-        guild_id, guild_name
-    ))
-    .await?;
+    let reply_mesage = format!(
+        "Success! Welcome {},  I learned this guild! {}",
+        guild_name, guild_id
+    );
+
+    ctx.say(reply_mesage).await?;
     Ok(())
 }
 
-#[poise::command(prefix_command, track_edits, aliases("UtSet"), slash_command)]
+#[poise::command(prefix_command, track_edits, aliases("UtTimesSet"), slash_command)]
 #[tracing::instrument(skip(ctx))]
 /// 実行したチャンネルをあなたのTimesとして登録します
 ///
@@ -94,7 +97,16 @@ pub async fn ut_c_times_set(
     let channel_id = ctx.channel_id();
     let channel_id_u64 = channel_id.get();
 
-    let webhook_url = create_webhook_url(ctx).await?;
+    // Ubiquitimesから拡散だとわかるように，ユーザー名にプレフィックスを付加する
+    let user_name = ubiquitimes_user_name(user_name);
+    let webhook_name = webhook_name(ctx).await;
+
+    // コマンド実行のたびに新しいwebhookを作成し，古いwebhookを削除する
+    // 処理の複雑さを減らすためと，予期せぬWebhookの無効化で，Webhook再作成の条件にあわないのに無効化されて動作しなくなることを防ぐため
+    let builder = CreateWebhook::new(webhook_name);
+    let webhook = ctx.channel_id().create_webhook(&ctx, builder).await?;
+
+    let webhook_url = webhook.url()?;
 
     let times_repository = ctx.data().times_repository.clone();
 
@@ -105,20 +117,78 @@ pub async fn ut_c_times_set(
         channel_id.get(),
         webhook_url.clone(),
     );
-    let old_time = times_repository.upsert_time(time).await?;
-    info!(
-        "new times set complete. guild_id: {}, user_id: {}, channel_id: {}",
-        guild_id, user_id, channel_id_u64
-    );
+
+    let old_time = times_repository.upsert_and_return_old_time(time).await?;
 
     // 古いwebhookを削除
-    let old_webhook_url = old_time.webhook_url;
-    let webhook = Webhook::from_url(ctx, &old_webhook_url).await?;
-    webhook.delete(ctx).await?;
+    if let Some(old_time) = old_time {
+        let old_webhook_url = old_time.webhook_url;
+        let webhook = Webhook::from_url(ctx, &old_webhook_url).await?;
+        webhook.delete(ctx).await?;
 
-    info!("Webhook deleted: {}", old_webhook_url);
+        info!("Webhook deleted: {}", old_webhook_url);
+    }
 
-    ctx.say("Success! I learned that this channel is your Times!")
-        .await?;
+    info!(
+        "new times set complete. guild_id: {}, user_id: {}, channel_id: {}, webhook_url: {}",
+        guild_id, user_id, channel_id_u64, webhook_url
+    );
+
+    let reply_mesage = format!(
+        "Success! Hello {}, I learned that this channel is your Times!",
+        user_name
+    );
+
+    ctx.say(reply_mesage).await?;
+    Ok(())
+}
+
+#[poise::command(prefix_command, track_edits, aliases("UtTimesDelete"), slash_command)]
+#[tracing::instrument(skip(ctx))]
+/// あなたのTimes情報を削除します
+pub async fn ut_c_times_delete(ctx: Context<'_>) -> Result<()> {
+    let user_id = ctx.author().id.get();
+    let guild_id = ctx.guild_id().ok_or(GuildGetError)?.get();
+
+    let times_repository = ctx.data().times_repository.clone();
+    times_repository.delete_time(user_id, guild_id).await?;
+
+    ctx.say("Success! I forgot your Times!").await?;
+    Ok(())
+}
+
+#[poise::command(prefix_command, track_edits, aliases("UT"), slash_command)]
+#[tracing::instrument(skip(ctx))]
+/// 代わりに~UTプレフィックスコマンドを使用してください
+///
+/// 書き込んだ内容を，他のギルドのあなたのTimesへ送信します
+/// ~UTプレフィックスコマンドを使用してください
+/// スラッシュコマンドで使用した場合，アプリケーションの応答がないと返ってきますが，
+/// 無視してください
+pub async fn ut_c_times_release(
+    ctx: Context<'_>,
+    #[description = "送信する内容"] content: String,
+) -> Result<()> {
+    let times_message = TimesMessage {
+        avater_url: ctx.author().avatar_url().unwrap_or_default(),
+        content: content.clone(),
+    };
+
+    let user_id = ctx.author().id.get();
+
+    let times_repository = ctx.data().times_repository.clone();
+    let times = times_repository.get_times(user_id).await?;
+
+    // Timesから，発信元のguild_idを持ったTimeを削除
+    let guild_id = ctx.guild_id().ok_or(GuildGetError)?.get();
+    let times = times
+        .into_iter()
+        .filter(|t| t.guild_id != guild_id)
+        .collect();
+
+    let message_sender = ctx.data().times_message_sender.clone();
+    message_sender.send_all(times_message, times).await?;
+
+    info!("times release complete. user_id: {}", user_id);
     Ok(())
 }

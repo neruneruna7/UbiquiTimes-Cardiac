@@ -1778,7 +1778,6 @@ dependencies = [
  "dotenvy",
  "num-bigint",
  "rand",
- "serde",
  "sqlx",
  "thiserror",
  "tokio",
@@ -3099,9 +3098,9 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "domain",
+ "message_sender",
  "poise",
  "repository",
- "serde",
  "shuttle-runtime",
  "shuttle-secrets",
  "shuttle-serenity",

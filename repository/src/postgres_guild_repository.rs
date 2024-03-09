@@ -1,9 +1,9 @@
 use domain::models::UtGuild;
 use domain::repository::GuildRepository;
-use serde::{Deserialize, Serialize};
+
 use thiserror::Error;
 
-use sqlx::{types::BigDecimal, Executor, FromRow, PgPool};
+use sqlx::{types::BigDecimal, FromRow, PgPool};
 
 use sqlx::Error as SqlxError;
 

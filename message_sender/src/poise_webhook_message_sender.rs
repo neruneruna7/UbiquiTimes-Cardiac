@@ -15,6 +15,12 @@ pub enum PoiseWebhookMessageSenderError {
 #[derive(Debug)]
 pub struct PoiseWebhookMessageSender;
 
+impl Default for PoiseWebhookMessageSender {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PoiseWebhookMessageSender {
     pub fn new() -> Self {
         Self
@@ -30,6 +36,10 @@ impl TimesMessageSender for PoiseWebhookMessageSender {
         let http = Http::new("");
 
         for time in times.into_iter() {
+            info!(
+                "will send guild_id {}, webhook_url {:?}",
+                time.guild_id, &time.webhook_url
+            );
             let webhook = Webhook::from_url(&http, &time.webhook_url).await?;
             let builder = ExecuteWebhook::new()
                 .content(message.content.clone())
