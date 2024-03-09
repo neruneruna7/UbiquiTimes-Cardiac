@@ -1,8 +1,13 @@
+use repository::UtTime;
+
+#[derive(Debug, Clone)]
 pub struct TimesMessage {
+    pub avater_url: String,
     pub content: String,
 }
 
+
 pub trait TimesMessageSender {
     type Error;
-    fn send_message(&self, message: TimesMessage) -> Result<(), Self::Error>;
+    async fn send_all(&self, message: TimesMessage, times: Vec<UtTime>) -> Result<(), Self::Error>;
 }
