@@ -107,18 +107,21 @@ pub async fn ut_c_times_set(
         channel_id.get(),
         webhook_url.clone(),
     );
-    let old_time = times_repository.upsert_time(time).await?;
+
+    let old_time = times_repository.upsert_and_return_old_time(time).await?;
     info!(
-        "new times set complete. guild_id: {}, user_id: {}, channel_id: {}",
-        guild_id, user_id, channel_id_u64
+        "new times set complete. guild_id: {}, user_id: {}, channel_id: {}, webhook_url: {}",
+        guild_id, user_id, channel_id_u64, webhook_url
     );
 
     // 古いwebhookを削除
-    let old_webhook_url = old_time.webhook_url;
-    let webhook = Webhook::from_url(ctx, &old_webhook_url).await?;
-    webhook.delete(ctx).await?;
+    if let Some(old_time) = old_time {
+        let old_webhook_url = old_time.webhook_url;
+        let webhook = Webhook::from_url(ctx, &old_webhook_url).await?;
+        webhook.delete(ctx).await?;
 
-    info!("Webhook deleted: {}", old_webhook_url);
+        info!("Webhook deleted: {}", old_webhook_url);
+    }
 
     let reply_mesage = format!(
         "Success! Hello {}, I learned that this channel is your Times!",

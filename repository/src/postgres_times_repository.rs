@@ -3,7 +3,7 @@ use domain::repository::TimesRepository;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
-use sqlx::{types::BigDecimal, Executor, FromRow, PgPool};
+use sqlx::{types::BigDecimal, Executor, FromRow, PgPool, Transaction};
 
 use sqlx::Error as SqlxError;
 
@@ -69,18 +69,42 @@ impl TimesRepository for PostgresTimesRepository {
     type Error = PostgresTimesRepositoryError;
 
     #[instrument(skip(self))]
-    async fn upsert_time(&self, time: UtTime) -> Result<UtTime, Self::Error> {
+    async fn upsert_and_return_old_time(
+        &self,
+        time: UtTime,
+    ) -> Result<Option<UtTime>, Self::Error> {
         let postgres_time = PostgresUtTime::from(time);
+        // 現在の値を取得する
+        // ない場合はNoneを返す
+        // ある場合はその値を返す
+        // トランザクションを開始する
+        // トランザクションを実際のコード中でどう扱えばいいのかよくわからない
+        let mut tx = self.pool.begin().await?;
+
+        let old_time = sqlx::query_as!(
+            PostgresUtTime,
+            r#"
+            SELECT user_id, guild_id, user_name, channel_id, webhook_url
+            FROM times
+            WHERE user_id = $1 AND guild_id = $2
+            "#,
+            postgres_time.user_id,
+            postgres_time.guild_id
+        )
+        .fetch_optional(&mut *tx)
+        .await?;
+
+        // 異常終了した場合はロールバックしたいが，どうやるのかよくわからない
+        // 明示しなくても自動でロールバックされるのだろうか
 
         // 衝突した場合は，前の値を取得したあとに新しい値で更新する
-        let postgres_time = sqlx::query_as!(
-            PostgresUtTime,
+        sqlx::query!(
             r#"
             INSERT INTO times (user_id, guild_id, user_name, channel_id, webhook_url)
             VALUES ($1, $2, $3, $4, $5)
             ON CONFLICT (user_id, guild_id) DO UPDATE
             SET user_name = $3, channel_id = $4, webhook_url = $5
-            RETURNING user_id, guild_id, user_name, channel_id, webhook_url
+
             "#,
             postgres_time.user_id,
             postgres_time.guild_id,
@@ -88,15 +112,56 @@ impl TimesRepository for PostgresTimesRepository {
             postgres_time.channel_id,
             postgres_time.webhook_url
         )
-        .fetch_one(&self.pool)
+        .execute(&mut *tx)
         .await?;
 
+        tx.commit().await?;
         info!(
             "time upserted successfully in postgres. user_id: {}, guild_id: {}. rerurned: {:?}",
             postgres_time.user_id, postgres_time.guild_id, postgres_time
         );
 
-        Ok(postgres_time.into())
+        // let old_time = sqlx::query_as!(
+        //     PostgresUtTime,
+        //     r#"
+        //     SELECT user_id, guild_id, user_name, channel_id, webhook_url
+        //     FROM times
+        //     WHERE user_id = $1 AND guild_id = $2
+        //     "#,
+        //     postgres_time.user_id,
+        //     postgres_time.guild_id
+        // )
+        // .fetch_optional(&self.pool)
+        // .await?;
+
+        // // 衝突した場合は，前の値を取得したあとに新しい値で更新する
+        // sqlx::query!(
+        //     r#"
+        //     INSERT INTO times (user_id, guild_id, user_name, channel_id, webhook_url)
+        //     VALUES ($1, $2, $3, $4, $5)
+        //     ON CONFLICT (user_id, guild_id) DO UPDATE
+        //     SET user_name = $3, channel_id = $4, webhook_url = $5
+
+        //     "#,
+        //     postgres_time.user_id,
+        //     postgres_time.guild_id,
+        //     postgres_time.user_name,
+        //     postgres_time.channel_id,
+        //     postgres_time.webhook_url
+        // )
+        // .execute(&self.pool)
+        // .await?;
+
+        // info!(
+        //     "time upserted successfully in postgres. user_id: {}, guild_id: {}. rerurned: {:?}",
+        //     postgres_time.user_id, postgres_time.guild_id, postgres_time
+        // );
+
+        if let Some(old_time) = old_time {
+            Ok(Some(old_time.into()))
+        } else {
+            Ok(None)
+        }
     }
 
     /// user_idと一致するTimeをすべて取得する
@@ -200,8 +265,8 @@ mod tests {
     }
 
     #[tokio::test]
-    /// upsert_timeを１度実行し，その際に成功するかどうかを確認する
-    async fn test_upsert_time() {
+    /// upsert_and_return_old_timeを１度実行し，その際に成功するかどうかを確認する
+    async fn test_upsert_and_return_old_time() {
         dotenv().ok();
 
         let pool = PgPoolOptions::new()
@@ -230,11 +295,14 @@ mod tests {
 
         let repository = PostgresTimesRepository::new(pool);
 
-        repository.upsert_time(time.clone()).await.unwrap();
+        repository
+            .upsert_and_return_old_time(time.clone())
+            .await
+            .unwrap();
     }
 
     #[tokio::test]
-    /// upsert_timeとget_timesを実行し，入れた値と取り出した値が一致するかどうかを確認する
+    /// upsert_and_return_old_timeとget_timesを実行し，入れた値と取り出した値が一致するかどうかを確認する
     async fn test_get_time() {
         dotenv().ok();
 
@@ -264,7 +332,10 @@ mod tests {
 
         let repository = PostgresTimesRepository::new(pool);
 
-        repository.upsert_time(time.clone()).await.unwrap();
+        repository
+            .upsert_and_return_old_time(time.clone())
+            .await
+            .unwrap();
 
         let times = repository.get_times(time.user_id).await.unwrap();
         assert_eq!(times, vec![time]);
@@ -312,8 +383,14 @@ mod tests {
 
         let repository = PostgresTimesRepository::new(pool);
 
-        repository.upsert_time(time_1.clone()).await.unwrap();
-        repository.upsert_time(time_2.clone()).await.unwrap();
+        repository
+            .upsert_and_return_old_time(time_1.clone())
+            .await
+            .unwrap();
+        repository
+            .upsert_and_return_old_time(time_2.clone())
+            .await
+            .unwrap();
 
         let times = repository.get_times(user_id).await.unwrap();
 
@@ -328,8 +405,8 @@ mod tests {
     }
 
     #[tokio::test]
-    /// upsert_timeを２度実行した場合，正しく更新されるかどうかを確認する
-    async fn test_upsert_time_twice() {
+    /// upsert_and_return_old_timeを２度実行した場合，正しく更新されるかどうかを確認する
+    async fn test_upsert_and_return_old_time_twice() {
         dotenv().ok();
 
         let pool = PgPoolOptions::new()
@@ -358,7 +435,10 @@ mod tests {
 
         let repository = PostgresTimesRepository::new(pool);
 
-        repository.upsert_time(time_1.clone()).await.unwrap();
+        repository
+            .upsert_and_return_old_time(time_1.clone())
+            .await
+            .unwrap();
 
         // 取り出した値とtime_1が一致するかどうかを確認する
         let times = repository.get_time(user_id, guild_id).await.unwrap();
@@ -372,7 +452,10 @@ mod tests {
             channel_id,
             webhook_url: "webhook_url_2".to_string(),
         };
-        repository.upsert_time(time_2.clone()).await.unwrap();
+        repository
+            .upsert_and_return_old_time(time_2.clone())
+            .await
+            .unwrap();
 
         // 取り出した値とtime_2が一致するかどうかを確認する
         let times = repository.get_time(user_id, guild_id).await.unwrap();
@@ -381,7 +464,7 @@ mod tests {
     }
 
     #[tokio::test]
-    /// upsert_timeとdelete_timeを実行し，入れた値を削除できるかどうかを確認する
+    /// upsert_and_return_old_timeとdelete_timeを実行し，入れた値を削除できるかどうかを確認する
     async fn test_delete_time() {
         dotenv().ok();
 
@@ -411,7 +494,10 @@ mod tests {
 
         let repository = PostgresTimesRepository::new(pool);
 
-        repository.upsert_time(time.clone()).await.unwrap();
+        repository
+            .upsert_and_return_old_time(time.clone())
+            .await
+            .unwrap();
         repository
             .delete_time(time.user_id, time.guild_id)
             .await
@@ -435,7 +521,7 @@ mod tests {
         let channel_id = generate_random_20_digits();
 
         // 20桁の数値を格納できるかどうか確認するため
-        let time = UtTime {
+        let time_1 = UtTime {
             user_id,
             guild_id,
             user_name: "user_name".to_string(),
@@ -443,7 +529,7 @@ mod tests {
             webhook_url: "webhook_url".to_string(),
         };
 
-        let times = vec![time.clone()];
+        let times = vec![time_1.clone()];
 
         // 外部キー制約の都合，guildsテーブルにもデータを入れる必要がある
         // そのための処理
@@ -451,7 +537,10 @@ mod tests {
 
         let repository = PostgresTimesRepository::new(pool);
 
-        repository.upsert_time(time.clone()).await.unwrap();
+        repository
+            .upsert_and_return_old_time(time_1.clone())
+            .await
+            .unwrap();
         let time_2 = UtTime {
             user_id,
             guild_id,
@@ -459,7 +548,11 @@ mod tests {
             channel_id,
             webhook_url: "webhook_url_2".to_string(),
         };
-        let time = repository.upsert_time(time_2.clone()).await.unwrap();
-        assert_eq!(time, time_2);
+
+        let returned_time = repository
+            .upsert_and_return_old_time(time_2.clone())
+            .await
+            .unwrap();
+        assert_eq!(returned_time, Some(time_1));
     }
 }
