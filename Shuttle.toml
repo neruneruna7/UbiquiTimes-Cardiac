@@ -1,1 +1,5 @@
 name = "ubiquitimes-cardiac"
+assets = [
+    ".sqlx",
+    ".env",
+]

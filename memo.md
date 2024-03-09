@@ -183,4 +183,8 @@ note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 修正完了
 
 shuttleへのデプロイ時，テストに使っているDB URLがローカルのもののため，その部分のテストを実行できずにクラッシュしてしまう問題
+違うっぽい...?
+さっきデプロイ通ったのはなんだったの？？
+仕方ないので，DBのクエリのところでマクロを使わないようにした
+
 未解決
