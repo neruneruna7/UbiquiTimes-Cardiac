@@ -1,6 +1,7 @@
--- もし存在すれば以下２つのテーブルを削除する
-DROP TABLE IF EXISTS Times;
-DROP TABLE IF EXISTS Guilds;
+-- -- もし存在すれば以下２つのテーブルを削除する
+-- -- デプロイ時に毎回削除するわけにはいかないので，コメントアウトする
+-- DROP TABLE IF EXISTS Times;
+-- DROP TABLE IF EXISTS Guilds;
 
 
 -- Rustのu64型を格納するためにNUMERIC(20)を使用

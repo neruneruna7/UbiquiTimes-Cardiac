@@ -15,6 +15,7 @@ thiserror = "1.0"
 
 domain = { path = "../domain" }
 
-# テスト時のみの依存関係
-[dev-dependencies]
+# # テスト時のみの依存関係
+# [dev-dependencies]
+# Shuttleへのデプロイがクラッシュするので，常時依存にしている
 rand = "0.8"
