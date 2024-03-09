@@ -36,10 +36,19 @@ async fn main(
         .get("DISCORD_TOKEN")
         .context("'DISCORD_TOKEN' was not found")?;
 
-    use commands::{hello, help, ut_c_guild_init, ut_c_times_set};
+    use commands::{
+        hello, help, ut_c_guild_init, ut_c_times_delete, ut_c_times_release, ut_c_times_set,
+    };
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![hello(), help(), ut_c_guild_init(), ut_c_times_set()],
+            commands: vec![
+                hello(),
+                help(),
+                ut_c_guild_init(),
+                ut_c_times_set(),
+                ut_c_times_delete(),
+                ut_c_times_release(),
+            ],
             ..Default::default()
         })
         .setup(|ctx, _ready, framework| {

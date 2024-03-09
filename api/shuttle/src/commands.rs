@@ -73,11 +73,12 @@ pub async fn ut_c_guild_init(ctx: Context<'_>) -> Result<()> {
     let guild = UtGuild::new(guild_id, Some(guild_name.clone()));
     guilds_repository.upsert_guild(guild).await?;
 
-    ctx.say(format!(
-        "guild_id: {}, guild_name: {}",
-        guild_id, guild_name
-    ))
-    .await?;
+    let reply_mesage = format!(
+        "Success! Welcome {},  I learned this guild! {}",
+        guild_name, guild_id
+    );
+
+    ctx.say(reply_mesage).await?;
     Ok(())
 }
 
@@ -119,8 +120,12 @@ pub async fn ut_c_times_set(
 
     info!("Webhook deleted: {}", old_webhook_url);
 
-    ctx.say("Success! I learned that this channel is your Times!")
-        .await?;
+    let reply_mesage = format!(
+        "Success! Hello {}, I learned that this channel is your Times!",
+        user_name
+    );
+
+    ctx.say(reply_mesage).await?;
     Ok(())
 }
 
