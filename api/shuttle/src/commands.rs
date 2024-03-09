@@ -20,7 +20,7 @@
 
 use crate::models::error::{GuildGetError, UserGetError};
 use crate::models::{Context, Data, UbiquiTimesCardiacResult as Result};
-use crate::webhook_creator::create_webhook_url;
+use crate::webhook_name::webhook_name;
 use domain::models::{TimesMessage, UtTime};
 use domain::{
     message_sender::TimesMessageSender,
@@ -96,7 +96,36 @@ pub async fn ut_c_times_set(
     let channel_id = ctx.channel_id();
     let channel_id_u64 = channel_id.get();
 
-    let webhook_url = create_webhook_url(ctx).await?;
+    // チャンネルに存在するwebhookを確認
+    // 指定フォーマットの名前のwebhookが存在する場合，そのwebhookのurlを返す
+    // 存在しない場合，新規作成してそのurlを返す
+    let channel_id = ctx.channel_id();
+    let webhooks = ctx.http().get_channel_webhooks(channel_id).await?;
+
+    let webhook_name = webhook_name(ctx).await;
+
+    // Check if a webhook with the specified format exists
+    let old_webhook_url = if let Some(webhook) = webhooks
+        .iter()
+        .find(|w| w.name == Some(webhook_name.clone()))
+    {
+        // 既にWebhookが存在する場合
+        let webhook_url = webhook.url()?;
+        Some(webhook_url)
+    } else {
+        None
+    };
+
+    let webhook_url = match old_webhook_url.clone() {
+        Some(old_webhook_url) => old_webhook_url,
+        None => {
+            // If no webhook with the specified format exists, create a new one
+            let builder = CreateWebhook::new(webhook_name);
+            let webhook = ctx.channel_id().create_webhook(&ctx, builder).await?;
+            let webhook_url = webhook.url()?;
+            webhook_url
+        }
+    };
 
     let times_repository = ctx.data().times_repository.clone();
 
@@ -109,19 +138,26 @@ pub async fn ut_c_times_set(
     );
 
     let old_time = times_repository.upsert_and_return_old_time(time).await?;
+
+    match old_webhook_url {
+        Some(_) => {}
+        // 現在のチャンネルにwebhookが存在ないかつ，upsertで古いwebhookが返ってきた場合
+        None => {
+            // 古いwebhookを削除
+            if let Some(old_time) = old_time {
+                let old_webhook_url = old_time.webhook_url;
+                let webhook = Webhook::from_url(ctx, &old_webhook_url).await?;
+                webhook.delete(ctx).await?;
+
+                info!("Webhook deleted: {}", old_webhook_url);
+            }
+        }
+    }
+
     info!(
         "new times set complete. guild_id: {}, user_id: {}, channel_id: {}, webhook_url: {}",
         guild_id, user_id, channel_id_u64, webhook_url
     );
-
-    // 古いwebhookを削除
-    if let Some(old_time) = old_time {
-        let old_webhook_url = old_time.webhook_url;
-        let webhook = Webhook::from_url(ctx, &old_webhook_url).await?;
-        webhook.delete(ctx).await?;
-
-        info!("Webhook deleted: {}", old_webhook_url);
-    }
 
     let reply_mesage = format!(
         "Success! Hello {}, I learned that this channel is your Times!",
