@@ -15,6 +15,12 @@ pub enum PoiseWebhookMessageSenderError {
 #[derive(Debug)]
 pub struct PoiseWebhookMessageSender;
 
+impl Default for PoiseWebhookMessageSender {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PoiseWebhookMessageSender {
     pub fn new() -> Self {
         Self

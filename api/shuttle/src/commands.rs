@@ -18,8 +18,8 @@
 // 	- 保存されたTimes情報のchannel_idと一致しない場合，チャンネル不一致として弾く
 // 	- 実行したギルド以外の，Timesが登録されているすべてのギルドへ同じ内容を送信する
 
-use crate::models::error::{GuildGetError, UserGetError};
-use crate::models::{Context, Data, UbiquiTimesCardiacResult as Result};
+use crate::models::error::GuildGetError;
+use crate::models::{Context, UbiquiTimesCardiacResult as Result};
 use crate::ubiquitimes_user_name::ubiquitimes_user_name;
 use crate::webhook_name::webhook_name;
 use domain::models::{TimesMessage, UtTime};
@@ -28,7 +28,7 @@ use domain::{
     models::UtGuild,
     repository::{GuildRepository, TimesRepository},
 };
-use poise::serenity_prelude::{ChannelId, CreateWebhook, Webhook};
+use poise::serenity_prelude::{CreateWebhook, Webhook};
 use tracing::info;
 
 /// Responds with "world!"
@@ -126,8 +126,8 @@ pub async fn ut_c_times_set(
             // If no webhook with the specified format exists, create a new one
             let builder = CreateWebhook::new(webhook_name);
             let webhook = ctx.channel_id().create_webhook(&ctx, builder).await?;
-            let webhook_url = webhook.url()?;
-            webhook_url
+
+            webhook.url()?
         }
     };
 

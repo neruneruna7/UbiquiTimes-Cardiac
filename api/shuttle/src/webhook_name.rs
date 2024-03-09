@@ -1,6 +1,3 @@
-use crate::models::error::UbiquiTimesCardiacResult as Result;
-use poise::serenity_prelude::{model::webhook, CreateWebhook};
-
 use crate::models::Context;
 
 /// Weebhook名はUT-c_{user_id}とする

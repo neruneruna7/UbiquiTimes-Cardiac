@@ -1,9 +1,9 @@
 use domain::models::UtTime;
 use domain::repository::TimesRepository;
-use serde::{Deserialize, Serialize};
+
 use thiserror::Error;
 
-use sqlx::{types::BigDecimal, Executor, FromRow, PgPool, Transaction};
+use sqlx::{types::BigDecimal, Executor, FromRow, PgPool};
 
 use sqlx::Error as SqlxError;
 

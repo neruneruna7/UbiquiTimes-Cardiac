@@ -3,19 +3,18 @@ use std::time::Duration;
 
 use anyhow::Context as _;
 use message_sender::poise_webhook_message_sender::PoiseWebhookMessageSender;
-use poise::serenity_prelude::model::guild;
+
 use poise::serenity_prelude::{ClientBuilder, GatewayIntents};
 use shuttle_runtime::CustomError;
 use shuttle_secrets::SecretStore;
 use shuttle_serenity::ShuttleSerenity;
-use sqlx::{Executor, FromRow, PgPool};
+use sqlx::{Executor, PgPool};
 
 mod commands;
 mod models;
 mod ubiquitimes_user_name;
 mod webhook_name;
 
-use commands::hello;
 use models::Data;
 
 use repository::postgres_guild_repository::PostgresGuildRepository;

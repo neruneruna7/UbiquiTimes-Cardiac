@@ -1,5 +1,5 @@
 use message_sender::poise_webhook_message_sender::PoiseWebhookMessageSenderError;
-use poise::serenity_prelude::{self as serenity, model::error};
+use poise::serenity_prelude::{self as serenity};
 
 use repository::{
     postgres_guild_repository::PostgresGuildRepositoryError,
