@@ -184,9 +184,12 @@ pub async fn ut_c_times_delete(ctx: Context<'_>) -> Result<()> {
 
 #[poise::command(prefix_command, track_edits, aliases("UT"), slash_command)]
 #[tracing::instrument(skip(ctx))]
-/// 書き込んだ内容を拡散します
+/// 代わりに~UTプレフィックスコマンドを使用してください
 ///
-/// 書き込んだ内容を登録されたギルドのすべてのチャンネルに送信します
+/// 書き込んだ内容を，他のギルドのあなたのTimesへ送信します
+/// ~UTプレフィックスコマンドを使用してください
+/// スラッシュコマンドで使用した場合，アプリケーションの応答がないと返ってきますが，
+/// 無視してください
 pub async fn ut_c_times_release(
     ctx: Context<'_>,
     #[description = "送信する内容"] content: String,
@@ -200,6 +203,13 @@ pub async fn ut_c_times_release(
 
     let times_repository = ctx.data().times_repository.clone();
     let times = times_repository.get_times(user_id).await?;
+
+    // Timesから，発信元のguild_idを持ったTimeを削除
+    let guild_id = ctx.guild_id().ok_or(GuildGetError)?.get();
+    let times = times
+        .into_iter()
+        .filter(|t| t.guild_id != guild_id)
+        .collect();
 
     let message_sender = ctx.data().times_message_sender.clone();
     message_sender.send_all(times_message, times).await?;
