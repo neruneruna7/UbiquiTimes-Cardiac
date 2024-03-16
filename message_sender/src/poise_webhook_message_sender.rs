@@ -28,7 +28,7 @@ impl TimesMessageSender for PoiseWebhookMessageSender {
     type Error = PoiseWebhookMessageSenderError;
     type Message = Message;
 
-    #[tracing::instrument(skip(self))]
+    #[tracing::instrument(skip(self, message, text, times))]
     async fn send_all(
         &self,
         message: &Self::Message,
@@ -41,15 +41,27 @@ impl TimesMessageSender for PoiseWebhookMessageSender {
 
         // ファイルの拡散には，URLを使って，URLを本文に付加する形で対応する
         let files = message.attachments.clone();
-        let text = format!(
-            "{}\n{}",
-            text,
-            files
-                .into_iter()
-                .map(|f| f.url)
-                .collect::<Vec<String>>()
-                .join("\n")
-        );
+        for f in files.iter() {
+            info!("file url: {:?}, proxy url: {:?}", f.url, f.proxy_url);
+        }
+
+        let files_name_and_url = files
+            .into_iter()
+            .map(|f| {
+                format!(
+                    r#"
+
+`content_type: {:?}`
+`size: {}`
+[{}]({})
+"#,
+                    f.content_type, f.size, f.filename, f.url
+                )
+            })
+            .collect::<Vec<String>>()
+            .join("\n");
+
+        let text = format!("{}\n{}", text, files_name_and_url);
 
         for time in times.into_iter() {
             info!(
