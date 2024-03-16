@@ -46,3 +46,15 @@ https://discord.com/oauth2/authorize?client_id=1215172502519812137&permissions=5
 - Manage Webhooks
 - Read Messages/Viwe Channels
 - Send Messages
+
+
+## このbotの目的
+このBotの開発を通じて得るものの目的に以下のものを定めている．
+
+- 変更に強い設計
+- 実際にユーザを得ることを想定した設計
+- ユーザからのフィードバックを得て，改善につなげる流れ
+
+補足：変更に強い設計は，源流のUbiquiTimesからの副次的な影響である．源流と比べて規模が小さいため，開発の際に様々な設計を試しやすい．そうして得たものを源流のUbiquiTimesへ還元するのである．
+
+
