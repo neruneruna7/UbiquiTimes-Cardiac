@@ -18,17 +18,17 @@
 // 	- 保存されたTimes情報のchannel_idと一致しない場合，チャンネル不一致として弾く
 // 	- 実行したギルド以外の，Timesが登録されているすべてのギルドへ同じ内容を送信する
 
-use crate::models::error::{GuildGetError, UserGetError};
+use crate::models::error::GuildGetError;
 use crate::models::{Context, UbiquiTimesCardiacResult as Result};
 use crate::ubiquitimes_user_name::ubiquitimes_user_name;
-use crate::webhook_name::{self, webhook_name};
-use domain::models::{TimesMessage, UtTime};
+use crate::webhook_name::webhook_name;
+use domain::models::UtTime;
 use domain::{
     message_sender::TimesMessageSender,
     models::UtGuild,
     repository::{GuildRepository, TimesRepository},
 };
-use poise::serenity_prelude as serenity;
+
 use poise::serenity_prelude::{CreateWebhook, Webhook};
 use tracing::info;
 
@@ -202,7 +202,7 @@ pub async fn ut_c_times_release(
 
     let message_sender = ctx.data().times_message_sender.clone();
     message_sender
-        .send_all(&prefix_ctx.msg, content, times)
+        .send_all(prefix_ctx.msg, content, times)
         .await?;
 
     info!("times release complete. user_id: {}", user_id);

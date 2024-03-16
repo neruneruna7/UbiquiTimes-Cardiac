@@ -1,4 +1,4 @@
-use crate::models::{TimesMessage, UtTime};
+use crate::models::UtTime;
 
 pub trait TimesMessageSender {
     type Error;

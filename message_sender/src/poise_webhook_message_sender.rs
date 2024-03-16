@@ -1,8 +1,5 @@
-use domain::{
-    message_sender::TimesMessageSender,
-    models::{TimesMessage, UtTime},
-};
-use poise::serenity_prelude::{CreateAttachment, ExecuteWebhook, Http, Message, Webhook};
+use domain::{message_sender::TimesMessageSender, models::UtTime};
+use poise::serenity_prelude::{ExecuteWebhook, Http, Message, Webhook};
 use thiserror::Error;
 use tracing::info;
 
