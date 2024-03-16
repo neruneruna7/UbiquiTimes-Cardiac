@@ -35,7 +35,7 @@ async fn main(
 
     // Get the discord token set in `Secrets.toml`
     let discord_token = secret_store
-        .get("DISCORD_TOKEN_TEST")
+        .get("DISCORD_TOKEN")
         .context("'DISCORD_TOKEN' was not found")?;
 
     use commands::{
