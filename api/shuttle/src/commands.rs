@@ -18,7 +18,7 @@
 // 	- 保存されたTimes情報のchannel_idと一致しない場合，チャンネル不一致として弾く
 // 	- 実行したギルド以外の，Timesが登録されているすべてのギルドへ同じ内容を送信する
 
-use crate::models::error::GuildGetError;
+use crate::models::error::{GuildGetError, UserGetError};
 use crate::models::{Context, UbiquiTimesCardiacResult as Result};
 use crate::ubiquitimes_user_name::ubiquitimes_user_name;
 use crate::webhook_name::{self, webhook_name};
@@ -28,6 +28,7 @@ use domain::{
     models::UtGuild,
     repository::{GuildRepository, TimesRepository},
 };
+use poise::serenity_prelude as serenity;
 use poise::serenity_prelude::{CreateWebhook, Webhook};
 use tracing::info;
 
@@ -167,11 +168,16 @@ pub async fn ut_c_times_delete(ctx: Context<'_>) -> Result<()> {
 /// 無視してください
 pub async fn ut_c_times_release(
     ctx: Context<'_>,
-    #[description = "送信する内容"] content: String,
+    // 複数行のメッセージを受け取るためにVec<String>を使用
+    #[description = "message"] content: Vec<String>,
 ) -> Result<()> {
+    info!("message: {:?}", content);
+
+    // ベクタを改行でつなげて，元の文字列に戻す
+    let content = content.join("\n");
     let times_message = TimesMessage {
         avater_url: ctx.author().avatar_url().unwrap_or_default(),
-        content: content.clone(),
+        content,
     };
 
     let user_id = ctx.author().id.get();
@@ -190,5 +196,28 @@ pub async fn ut_c_times_release(
     message_sender.send_all(times_message, times).await?;
 
     info!("times release complete. user_id: {}", user_id);
+    Ok(())
+}
+
+#[poise::command(prefix_command, hide_in_help)]
+#[tracing::instrument(skip(ctx))]
+///  スラッシュコマンドの変更を即座に反映するためのコマンド
+///
+/// 主にデバッグ用
+pub async fn register(ctx: Context<'_>, #[flag] global: bool) -> Result<()> {
+    poise::builtins::register_application_commands(ctx, global).await?;
+    Ok(())
+}
+
+/// テスト用のコマンド
+#[poise::command(prefix_command, track_edits, aliases("test"), slash_command)]
+#[tracing::instrument(skip(ctx))]
+pub async fn ut_c_test(
+    ctx: Context<'_>,
+    #[description = "message"] content: Vec<String>,
+) -> Result<()> {
+    let content = content.join("\n");
+    info!("message: {:?}", content);
+    ctx.say(content).await?;
     Ok(())
 }

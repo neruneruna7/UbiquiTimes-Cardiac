@@ -39,7 +39,8 @@ async fn main(
         .context("'DISCORD_TOKEN' was not found")?;
 
     use commands::{
-        hello, help, ut_c_guild_init, ut_c_times_delete, ut_c_times_release, ut_c_times_set,
+        hello, help, register, ut_c_guild_init, ut_c_test, ut_c_times_delete, ut_c_times_release,
+        ut_c_times_set,
     };
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
@@ -50,6 +51,8 @@ async fn main(
                 ut_c_times_set(),
                 ut_c_times_delete(),
                 ut_c_times_release(),
+                register(),
+                ut_c_test(),
             ],
             // ここでprefixを設定する
             prefix_options: poise::PrefixFrameworkOptions {
