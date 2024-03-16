@@ -18,17 +18,17 @@
 // 	- 保存されたTimes情報のchannel_idと一致しない場合，チャンネル不一致として弾く
 // 	- 実行したギルド以外の，Timesが登録されているすべてのギルドへ同じ内容を送信する
 
-use crate::models::error::{GuildGetError, UserGetError};
+use crate::models::error::GuildGetError;
 use crate::models::{Context, UbiquiTimesCardiacResult as Result};
 use crate::ubiquitimes_user_name::ubiquitimes_user_name;
-use crate::webhook_name::{self, webhook_name};
-use domain::models::{TimesMessage, UtTime};
+use crate::webhook_name::webhook_name;
+use domain::models::UtTime;
 use domain::{
     message_sender::TimesMessageSender,
     models::UtGuild,
     repository::{GuildRepository, TimesRepository},
 };
-use poise::serenity_prelude as serenity;
+
 use poise::serenity_prelude::{CreateWebhook, Webhook};
 use tracing::info;
 
@@ -172,13 +172,21 @@ pub async fn ut_c_times_release(
     #[description = "message"] content: Vec<String>,
 ) -> Result<()> {
     info!("message: {:?}", content);
+    let prefix_ctx = match &ctx {
+        poise::Context::Application(_) => {
+            // スラッシュコマンド非対応なのに，なぜスラッシュコマンドとして呼ぶことも許可しているのか？
+            // コマンドを探すときに，スラッシュを打ったら候補に出てくる方が探しやすいから
+            // その後．プレフィックスコマンドに誘導する方が良いと考えた
+            info!("slash command is not supported. please use the ~UT prefix command.");
+            let _ = ctx.say("Please use the ~UT prefix command").await;
+            return Ok(());
+        }
+        poise::Context::Prefix(prefix_ctx) => prefix_ctx,
+    };
+    info!("prefix command");
 
     // ベクタを改行でつなげて，元の文字列に戻す
     let content = content.join("\n");
-    let times_message = TimesMessage {
-        avater_url: ctx.author().avatar_url().unwrap_or_default(),
-        content,
-    };
 
     let user_id = ctx.author().id.get();
 
@@ -193,7 +201,9 @@ pub async fn ut_c_times_release(
         .collect();
 
     let message_sender = ctx.data().times_message_sender.clone();
-    message_sender.send_all(times_message, times).await?;
+    message_sender
+        .send_all(prefix_ctx.msg, content, times)
+        .await?;
 
     info!("times release complete. user_id: {}", user_id);
     Ok(())

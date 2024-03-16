@@ -1,8 +1,5 @@
-use domain::{
-    message_sender::TimesMessageSender,
-    models::{TimesMessage, UtTime},
-};
-use poise::serenity_prelude::{ExecuteWebhook, Http, Webhook};
+use domain::{message_sender::TimesMessageSender, models::UtTime};
+use poise::serenity_prelude::{ExecuteWebhook, Http, Message, Webhook};
 use thiserror::Error;
 use tracing::info;
 
@@ -29,11 +26,30 @@ impl PoiseWebhookMessageSender {
 
 impl TimesMessageSender for PoiseWebhookMessageSender {
     type Error = PoiseWebhookMessageSenderError;
+    type Message = Message;
 
     #[tracing::instrument(skip(self))]
-    async fn send_all(&self, message: TimesMessage, times: Vec<UtTime>) -> Result<(), Self::Error> {
+    async fn send_all(
+        &self,
+        message: &Self::Message,
+        text: String,
+        times: Vec<UtTime>,
+    ) -> Result<(), Self::Error> {
         // Webhookを送るだけなら，トークンとやらはなしでもいいらしい
         let http = Http::new("");
+        let avater_url = message.author.avatar_url().unwrap_or_default();
+
+        // ファイルの拡散には，URLを使って，URLを本文に付加する形で対応する
+        let files = message.attachments.clone();
+        let text = format!(
+            "{}\n{}",
+            text,
+            files
+                .into_iter()
+                .map(|f| f.url)
+                .collect::<Vec<String>>()
+                .join("\n")
+        );
 
         for time in times.into_iter() {
             info!(
@@ -42,9 +58,9 @@ impl TimesMessageSender for PoiseWebhookMessageSender {
             );
             let webhook = Webhook::from_url(&http, &time.webhook_url).await?;
             let builder = ExecuteWebhook::new()
-                .content(message.content.clone())
+                .content(&text)
                 .username(time.user_name)
-                .avatar_url(message.avater_url.clone());
+                .avatar_url(&avater_url);
             webhook.execute(&http, false, builder).await?;
         }
 
