@@ -1,3 +1,5 @@
+use std::num::ParseIntError;
+
 use domain::models::UtGuild;
 use domain::repository::GuildRepository;
 
@@ -14,6 +16,8 @@ use tracing::{info, instrument};
 pub enum PostgresGuildRepositoryError {
     #[error("sqlx error: {0}")]
     SqlxError(#[from] SqlxError),
+    #[error("parseint error: {0}")]
+    ParseIntError(#[from] ParseIntError),
 }
 
 // postgresではu64を格納できないので，Bigdecimalに変換して格納する
@@ -37,12 +41,17 @@ impl From<UtGuild> for PostgresUtGuild {
 
 // PostgresUtGuildをUtGuildに変換する
 
-impl From<PostgresUtGuild> for UtGuild {
-    fn from(p: PostgresUtGuild) -> Self {
-        Self {
-            guild_id: p.guild_id.to_string().parse().unwrap(),
-            guild_name: p.guild_name,
-        }
+impl TryFrom<PostgresUtGuild> for UtGuild {
+    type Error = ParseIntError;
+
+    fn try_from(value: PostgresUtGuild) -> Result<Self, Self::Error> {
+        let guild_id = value.guild_id.to_string().parse()?;
+        let g = Self {
+            guild_id,
+            guild_name: value.guild_name,
+        };
+
+        Ok(g)
     }
 }
 
@@ -103,7 +112,8 @@ impl GuildRepository for PostgresGuildRepository {
             guild.guild_name.as_deref().unwrap_or("None")
         );
 
-        Ok(guild.into())
+        let g = guild.try_into()?;
+        Ok(g)
     }
 
     #[instrument(skip(self))]
