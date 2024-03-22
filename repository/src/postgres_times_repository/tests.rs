@@ -53,10 +53,7 @@ async fn test_upsert_and_return_old_time() {
 
     let repository = PostgresTimesRepository::new(pool);
 
-    repository
-        .upsert_and_return_old_time(time.clone())
-        .await
-        .unwrap();
+    repository.upsert_time(time.clone()).await.unwrap();
 }
 
 #[tokio::test]
@@ -90,10 +87,7 @@ async fn test_get_time() {
 
     let repository = PostgresTimesRepository::new(pool);
 
-    repository
-        .upsert_and_return_old_time(time.clone())
-        .await
-        .unwrap();
+    repository.upsert_time(time.clone()).await.unwrap();
 
     let times = repository.get_times(time.user_id).await.unwrap();
     assert_eq!(times, vec![time]);
@@ -141,14 +135,8 @@ async fn test_gets_times() {
 
     let repository = PostgresTimesRepository::new(pool);
 
-    repository
-        .upsert_and_return_old_time(time_1.clone())
-        .await
-        .unwrap();
-    repository
-        .upsert_and_return_old_time(time_2.clone())
-        .await
-        .unwrap();
+    repository.upsert_time(time_1.clone()).await.unwrap();
+    repository.upsert_time(time_2.clone()).await.unwrap();
 
     let times = repository.get_times(user_id).await.unwrap();
 
@@ -193,10 +181,7 @@ async fn test_upsert_and_return_old_time_twice() {
 
     let repository = PostgresTimesRepository::new(pool);
 
-    repository
-        .upsert_and_return_old_time(time_1.clone())
-        .await
-        .unwrap();
+    repository.upsert_time(time_1.clone()).await.unwrap();
 
     // 取り出した値とtime_1が一致するかどうかを確認する
     let times = repository.get_time(user_id, guild_id).await.unwrap();
@@ -210,10 +195,7 @@ async fn test_upsert_and_return_old_time_twice() {
         channel_id,
         webhook_url: "webhook_url_2".to_string(),
     };
-    repository
-        .upsert_and_return_old_time(time_2.clone())
-        .await
-        .unwrap();
+    repository.upsert_time(time_2.clone()).await.unwrap();
 
     // 取り出した値とtime_2が一致するかどうかを確認する
     let times = repository.get_time(user_id, guild_id).await.unwrap();
@@ -222,7 +204,7 @@ async fn test_upsert_and_return_old_time_twice() {
 }
 
 #[tokio::test]
-/// upsert_and_return_old_timeとdelete_timeを実行し，入れた値を削除できるかどうかを確認する
+/// upsert_timeとdelete_timeを実行し，入れた値を削除できるかどうかを確認する
 async fn test_delete_time() {
     dotenv().ok();
 
@@ -252,10 +234,7 @@ async fn test_delete_time() {
 
     let repository = PostgresTimesRepository::new(pool);
 
-    repository
-        .upsert_and_return_old_time(time.clone())
-        .await
-        .unwrap();
+    repository.upsert_time(time.clone()).await.unwrap();
     repository
         .delete_time(time.user_id, time.guild_id)
         .await
@@ -295,10 +274,7 @@ async fn test_upsert_conflict() {
 
     let repository = PostgresTimesRepository::new(pool);
 
-    repository
-        .upsert_and_return_old_time(time_1.clone())
-        .await
-        .unwrap();
+    repository.upsert_time(time_1.clone()).await.unwrap();
     let time_2 = UtTime {
         user_id,
         guild_id,
@@ -307,9 +283,6 @@ async fn test_upsert_conflict() {
         webhook_url: "webhook_url_2".to_string(),
     };
 
-    let returned_time = repository
-        .upsert_and_return_old_time(time_2.clone())
-        .await
-        .unwrap();
+    let returned_time = repository.upsert_time(time_2.clone()).await.unwrap();
     assert_eq!(returned_time, Some(time_1));
 }
