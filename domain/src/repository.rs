@@ -1,6 +1,6 @@
 use crate::models::{UtGuild, UtTime};
 
-// 
+//
 pub trait TimesRepository {
     type Error;
     async fn upsert_time(&self, time: UtTime) -> Result<Option<UtTime>, Self::Error>;

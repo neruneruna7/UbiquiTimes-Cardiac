@@ -69,10 +69,7 @@ impl TimesRepository for PostgresTimesRepository {
     type Error = PostgresTimesRepositoryError;
 
     #[instrument(skip(self))]
-    async fn upsert_time(
-        &self,
-        time: UtTime,
-    ) -> Result<Option<UtTime>, Self::Error> {
+    async fn upsert_time(&self, time: UtTime) -> Result<Option<UtTime>, Self::Error> {
         let postgres_time = PostgresUtTime::from(time);
         // 現在の値を取得する
         // ない場合はNoneを返す
