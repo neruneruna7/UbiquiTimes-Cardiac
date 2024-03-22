@@ -12,8 +12,6 @@ use sqlx::{Executor, PgPool};
 
 mod commands;
 mod models;
-mod ubiquitimes_user_name;
-mod webhook_name;
 
 use models::Data;
 

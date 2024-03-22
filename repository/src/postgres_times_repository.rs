@@ -69,7 +69,7 @@ impl TimesRepository for PostgresTimesRepository {
     type Error = PostgresTimesRepositoryError;
 
     #[instrument(skip(self))]
-    async fn upsert_and_return_old_time(
+    async fn upsert_time(
         &self,
         time: UtTime,
     ) -> Result<Option<UtTime>, Self::Error> {

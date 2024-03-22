@@ -20,9 +20,9 @@
 
 use crate::models::error::GuildGetError;
 use crate::models::{Context, UbiquiTimesCardiacResult as Result};
-use crate::ubiquitimes_user_name::ubiquitimes_user_name;
-use crate::webhook_name::webhook_name;
 use domain::models::UtTime;
+use domain::ubiquitimes_user_name::ubiquitimes_user_name;
+use domain::ubiquitimes_webhook_name::webhook_name;
 use domain::{
     message_sender::TimesMessageSender,
     models::UtGuild,
@@ -100,7 +100,7 @@ pub async fn ut_c_times_set(
 
     // Ubiquitimesから拡散だとわかるように，ユーザー名にプレフィックスを付加する
     let user_name = ubiquitimes_user_name(user_name);
-    let webhook_name = webhook_name(ctx).await;
+    let webhook_name = webhook_name(user_id);
 
     // コマンド実行のたびに新しいwebhookを作成し，古いwebhookを削除する
     // 処理の複雑さを減らすためと，予期せぬWebhookの無効化で，Webhook再作成の条件にあわないのに無効化されて動作しなくなることを防ぐため
@@ -119,7 +119,7 @@ pub async fn ut_c_times_set(
         webhook_url.clone(),
     );
 
-    let old_time = times_repository.upsert_and_return_old_time(time).await?;
+    let old_time = times_repository.upsert_time(time).await?;
 
     // 古いwebhookを削除
     if let Some(old_time) = old_time {
