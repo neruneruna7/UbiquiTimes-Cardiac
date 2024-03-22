@@ -71,8 +71,9 @@ pub async fn ut_c_guild_init(ctx: Context<'_>) -> Result<()> {
     let guild_id = ctx.guild_id().ok_or(GuildGetError)?.get();
     let guild_name = ctx.guild().ok_or(GuildGetError)?.name.clone();
 
-    let guilds_repository = ctx.data().guild_repository.clone();
     let guild = UtGuild::new(guild_id, Some(guild_name.clone()));
+
+    let guilds_repository = ctx.data().guild_repository.clone();
     guilds_repository.upsert_guild(guild).await?;
 
     let reply_mesage = format!(
@@ -106,11 +107,9 @@ pub async fn ut_c_times_set(
     // 処理の複雑さを減らすためと，予期せぬWebhookの無効化で，Webhook再作成の条件にあわないのに無効化されて動作しなくなることを防ぐため
     let builder = CreateWebhook::new(webhook_name);
     let webhook = ctx.channel_id().create_webhook(&ctx, builder).await?;
-
     let webhook_url = webhook.url()?;
 
-    let times_repository = ctx.data().times_repository.clone();
-
+    // Timeデータを作成
     let time = UtTime::new(
         user_id,
         guild_id,
@@ -119,16 +118,12 @@ pub async fn ut_c_times_set(
         webhook_url.clone(),
     );
 
+    // Timeデータを保存または更新
+    let times_repository = ctx.data().times_repository.clone();
     let old_time = times_repository.upsert_time(time).await?;
 
     // 古いwebhookを削除
-    if let Some(old_time) = old_time {
-        let old_webhook_url = old_time.webhook_url;
-        let webhook = Webhook::from_url(ctx, &old_webhook_url).await?;
-        webhook.delete(ctx).await?;
-
-        info!("Webhook deleted: {}", old_webhook_url);
-    }
+    delete_old_webhook(&ctx, old_time).await?;
 
     info!(
         "new times set complete. guild_id: {}, user_id: {}, channel_id: {}, webhook_url: {}",
@@ -141,6 +136,17 @@ pub async fn ut_c_times_set(
     );
 
     ctx.say(reply_mesage).await?;
+    Ok(())
+}
+
+async fn delete_old_webhook(ctx: &Context<'_>, old_time: Option<UtTime>) -> Result<()> {
+    if let Some(old_time) = old_time {
+        let old_webhook_url = old_time.webhook_url;
+        let webhook = Webhook::from_url(ctx, &old_webhook_url).await?;
+        webhook.delete(ctx).await?;
+
+        info!("Webhook deleted: {}", old_webhook_url);
+    }
     Ok(())
 }
 
