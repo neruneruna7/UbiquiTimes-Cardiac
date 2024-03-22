@@ -29,7 +29,7 @@ impl TimesMessageSender for PoiseWebhookMessageSender {
     type Message = Message;
 
     #[tracing::instrument(skip(self, message, text, times))]
-    async fn send_all(
+    async fn send_message_all_times(
         &self,
         message: &Self::Message,
         text: String,

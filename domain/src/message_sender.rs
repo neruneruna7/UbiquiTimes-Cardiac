@@ -5,7 +5,7 @@ pub trait TimesMessageSender {
     type Message;
     // テキストは別途用意する
     // コマンドの引数としてわたってくるから，それを使う
-    async fn send_all(
+    async fn send_message_all_times(
         &self,
         message: &Self::Message,
         text: String,

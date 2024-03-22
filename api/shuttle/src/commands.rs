@@ -208,7 +208,7 @@ pub async fn ut_c_times_release(
 
     let message_sender = ctx.data().times_message_sender.clone();
     message_sender
-        .send_all(prefix_ctx.msg, content, times)
+        .send_message_all_times(prefix_ctx.msg, content, times)
         .await?;
 
     info!("times release complete. user_id: {}", user_id);
