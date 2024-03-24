@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 sqlx = {version = "*", features = ["bigdecimal", "postgres"] }
 num-bigint = "0.4"
-tokio = "*"
+tokio = {version = "*", default-features = false}
 dotenvy = "*"
 
 domain = { path = "../domain" }
