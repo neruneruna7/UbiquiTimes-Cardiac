@@ -5,8 +5,7 @@ use anyhow::Context as _;
 use message_sender::poise_webhook_message_sender::PoiseWebhookMessageSender;
 
 use poise::serenity_prelude::{ClientBuilder, GatewayIntents};
-use shuttle_runtime::CustomError;
-use shuttle_secrets::SecretStore;
+use shuttle_runtime::{CustomError, SecretStore};
 use shuttle_serenity::ShuttleSerenity;
 use sqlx::{Executor, PgPool};
 
@@ -21,7 +20,7 @@ use repository::postgres_times_repository::PostgresTimesRepository;
 
 #[shuttle_runtime::main]
 async fn main(
-    #[shuttle_secrets::Secrets] secret_store: SecretStore,
+    #[shuttle_runtime::Secrets] secret_store: SecretStore,
     #[shuttle_shared_db::Postgres] pool: PgPool,
 ) -> ShuttleSerenity {
     // dbのセットアップ
