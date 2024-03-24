@@ -1,0 +1,18 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO times (user_id, guild_id, user_name, channel_id, webhook_url)\n            VALUES ($1, $2, $3, $4, $5)\n            ON CONFLICT (user_id, guild_id) DO UPDATE\n            SET user_name = $3, channel_id = $4, webhook_url = $5\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Numeric",
+        "Numeric",
+        "Varchar",
+        "Numeric",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "5e41b03e17feed9a3455d4901efb4828cb1cd74a0a445046e159d0a097cf211c"
+}

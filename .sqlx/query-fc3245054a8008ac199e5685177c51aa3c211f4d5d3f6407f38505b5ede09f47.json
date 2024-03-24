@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            DELETE FROM times\n            WHERE user_id = $1 AND guild_id = $2\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Numeric",
+        "Numeric"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "fc3245054a8008ac199e5685177c51aa3c211f4d5d3f6407f38505b5ede09f47"
+}

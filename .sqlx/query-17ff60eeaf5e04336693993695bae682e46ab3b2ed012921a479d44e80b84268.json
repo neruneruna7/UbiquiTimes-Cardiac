@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT guild_id, guild_name\n            FROM guilds\n            WHERE guild_id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "guild_id",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 1,
+        "name": "guild_name",
+        "type_info": "Varchar"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Numeric"
+      ]
+    },
+    "nullable": [
+      false,
+      true
+    ]
+  },
+  "hash": "17ff60eeaf5e04336693993695bae682e46ab3b2ed012921a479d44e80b84268"
+}

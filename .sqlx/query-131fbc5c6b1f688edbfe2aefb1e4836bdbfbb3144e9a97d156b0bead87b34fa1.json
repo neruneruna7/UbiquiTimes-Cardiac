@@ -1,0 +1,14 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            DELETE FROM guilds\n            WHERE guild_id = $1\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Numeric"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "131fbc5c6b1f688edbfe2aefb1e4836bdbfbb3144e9a97d156b0bead87b34fa1"
+}
