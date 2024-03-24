@@ -21,6 +21,7 @@
 use crate::models::error::GuildGetError;
 use crate::models::{Context, UbiquiTimesCardiacResult as Result};
 use domain::models::UtTime;
+use domain::tracing::{self, info};
 use domain::ubiquitimes_user_name::ubiquitimes_user_name;
 use domain::ubiquitimes_webhook_name::webhook_name;
 use domain::{
@@ -30,7 +31,6 @@ use domain::{
 };
 
 use poise::serenity_prelude::{CreateWebhook, Webhook};
-use tracing::info;
 
 /// Responds with "world!"
 #[poise::command(slash_command)]

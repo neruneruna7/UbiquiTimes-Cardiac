@@ -6,3 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+# プロジェクト全体で使うことがわかりきっているものは，ここでインポートしてしまって，re-exportで各クレートに渡す
+thiserror = "1.0.*"
+tracing = "0.1.*"
+

@@ -1,7 +1,9 @@
 use domain::{message_sender::TimesMessageSender, models::UtTime};
 use poise::serenity_prelude::{ExecuteWebhook, Http, Message, Webhook};
-use thiserror::Error;
-use tracing::info;
+// selfをつけることで，cargo.tomlにthiserrorへの依存関係を書いたときと同じように使える
+// ない場合，thiserrorでは呼べないため
+use domain::thiserror::{self, Error};
+use domain::tracing::{self, info};
 
 #[derive(Debug, Error)]
 pub enum PoiseWebhookMessageSenderError {

@@ -15,9 +15,9 @@ mod models;
 
 use models::Data;
 
+use domain::tracing::{self, info};
 use repository::postgres_guild_repository::PostgresGuildRepository;
 use repository::postgres_times_repository::PostgresTimesRepository;
-use tracing::info;
 
 #[shuttle_runtime::main]
 async fn main(

@@ -580,6 +580,10 @@ dependencies = [
 [[package]]
 name = "domain"
 version = "0.1.0"
+dependencies = [
+ "thiserror",
+ "tracing",
+]
 
 [[package]]
 name = "dotenvy"
@@ -1212,8 +1216,6 @@ version = "0.1.0"
 dependencies = [
  "domain",
  "poise",
- "thiserror",
- "tracing",
 ]
 
 [[package]]
@@ -1779,9 +1781,7 @@ dependencies = [
  "num-bigint",
  "rand",
  "sqlx",
- "thiserror",
  "tokio",
- "tracing",
 ]
 
 [[package]]
@@ -3107,8 +3107,6 @@ dependencies = [
  "shuttle-shared-db",
  "sqlx",
  "thiserror",
- "tokio",
- "tracing",
 ]
 
 [[package]]
