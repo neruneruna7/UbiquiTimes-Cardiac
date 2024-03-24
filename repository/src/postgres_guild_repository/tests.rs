@@ -15,6 +15,7 @@ async fn test_upsert_guild() {
         .connect(&env::var("DATABASE_URL").expect("DATABASE_URL must be set"))
         .await
         .unwrap();
+    
     let repository = PostgresGuildRepository::new(pool);
 
     let guild_id = generate_random_20_digits();
