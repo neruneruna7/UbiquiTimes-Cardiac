@@ -3,5 +3,30 @@ CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
 
 [tasks.fmt]
 command = "cargo"
-args = ["watch","-x", "fmt"]
+args = ["fmt"]
+
+[tasks.ci]
+dependencies = ["fmt","test", "clippy", "machete", "typos"]
+
+
+[tasks.test]
+command = "cargo"
+args = ["test"]
+
+[tasks.build]
+command = "cargo"
+args = ["build"]
+
+[tasks.clippy]
+command = "cargo"
+args = ["clippy", "--fix"]
+
+[tasks.machete]
+command = "cargo"
+args = ["machete", "--fix"]
+
+[tasks.typos]
+command = "typos"
+
+
 
