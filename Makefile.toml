@@ -1,5 +1,6 @@
 [env]
 CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
+DB_CONTAINER_NAME = "shuttle_ubiquitimes-cardiac_shared_postgres"
 
 [config]
 default_to_workspace = false
@@ -8,9 +9,18 @@ default_to_workspace = false
 command = "cargo"
 args = ["sqlx","prepare", "--workspace"]
 
+[tasks.container-start]
+command = "docker"
+args = ["container","start","${DB_CONTAINER_NAME}"]
+
+[tasks.container-stop]
+command = "docker"
+args = ["container","stop","${DB_CONTAINER_NAME}"]
+
 [tasks.fmt] 
 command = "cargo"
 args = ["fmt"]
+dependencies = ["container-start"]
 
 [tasks.clippy]
 command = "cargo"
@@ -37,5 +47,5 @@ dependencies = ["build"]
 
 [tasks.ci]
 description = "事前に対応するDBのDockerコンテナを起動しておくこと"
-# todo: コンテナ起動タスクを追加する
 dependencies = ["test"]
+run_task = "container-stop"
