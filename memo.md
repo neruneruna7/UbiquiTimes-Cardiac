@@ -37,7 +37,7 @@ UbiquiTimesと違って，１つのbotを複数のギルドに導入する方式
 ```rust
 UserTime {
 	user_id: u64, // primary key
-	guild_id: u64, // primary key foregin key
+	guild_id: u64, // primary key foreign key
 	user_name: u64
 	channel_id: u64,
 	webhook_url: String

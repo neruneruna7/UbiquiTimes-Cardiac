@@ -183,7 +183,7 @@ impl TimesRepository for PostgresTimesRepository {
             WHERE user_id = $1 AND guild_id = $2
             "#,
             bigdecimal_user_id,
-            bigdecimal_guild_id
+            bigdecimal_guild_id,
         )
         .fetch_one(&self.pool)
         .await?;
