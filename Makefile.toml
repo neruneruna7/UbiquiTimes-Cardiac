@@ -8,7 +8,12 @@ args = ["watch","-x", "fmt"]
 
 [tasks.ci]
 dependencies = ["fmt-ci","test-ci", "clippy-ci", "machete-ci", "typos-ci"]
-
+script = [
+'''
+cargo update
+cargo check
+'''
+]
 [tasks.fmt-ci]
 command = "cargo"
 args = ["fmt"]
@@ -19,11 +24,11 @@ args = ["test"]
 
 [tasks.clippy-ci]
 command = "cargo"
-args = ["clippy", "--fix"]
+args = ["clippy", "--fix", "--allow-dirty"]
 
 [tasks.machete-ci]
 command = "cargo"
-args = ["machete", "--fix"]
+args = ["machete", "--fix", "--with-metadata"]
 
 [tasks.typos-ci]
 command = "typos"
