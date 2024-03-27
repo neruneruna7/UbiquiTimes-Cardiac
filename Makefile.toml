@@ -1,19 +1,37 @@
 [env]
 CARGO_MAKE_EXTEND_WORKSPACE_MAKEFILE = true
 
-[tasks.fmt]
+[tasks.fmt] 
 command = "cargo"
-args = ["watch","-x", "fmt"]
+args = ["fmt"]
+
+[tasks.clippy]
+command = "cargo"
+args = ["clippy","--fix","--allow-dirty"]
+
+[tasks.typos]
+command = "typos"
+args = ["-w"]
+
+[tasks.update]
+command = "cargo"
+args = ["update"]
+
+[tasks.build]
+command = "cargo"
+args = ["build"]
+dependencies = ["fmt","clippy","typos","update"]
+
+[tasks.test]
+command = "cargo"
+args = ["test"]
+dependencies = ["build"]
 
 
-[tasks.ci]
-script = [
-'''
-cargo fmt
-cargo test
-cargo clippy --fix --allow-dirty
-typos -w
-cargo update
-cargo check
-'''
-]
+[tasks.my_ci]
+dependencies = ["test"]
+
+[tasks.my_flow]
+command = "echo"
+args = ["my_flow"]
+dependencies = ["test"]
