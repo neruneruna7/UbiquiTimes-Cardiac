@@ -14,7 +14,7 @@ mod models;
 
 use models::Data;
 
-use domain::tracing::{self, info};
+use domain::tracing::{info};
 use repository::postgres_guild_repository::PostgresGuildRepository;
 use repository::postgres_times_repository::PostgresTimesRepository;
 

@@ -7,11 +7,9 @@ use domain::thiserror::{self, Error};
 // tracingもロギングも全く理解していないことだらけだが，とりあえず使ってみる
 use domain::tracing::{self, info, instrument};
 
-
 use sqlx::{types::BigDecimal, FromRow, PgPool};
 
 use sqlx::Error as SqlxError;
-
 
 #[derive(Error, Debug)]
 pub enum PostgresGuildRepositoryError {

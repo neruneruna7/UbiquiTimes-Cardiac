@@ -9,7 +9,6 @@ use sqlx::{types::BigDecimal, FromRow, PgPool};
 
 use sqlx::Error as SqlxError;
 
-
 #[derive(Error, Debug)]
 pub enum PostgresTimesRepositoryError {
     #[error("sqlx error: {0}")]
