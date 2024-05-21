@@ -2189,6 +2189,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "shuttle"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "domain",
+ "message_sender",
+ "poise",
+ "repository",
+ "shuttle-runtime",
+ "shuttle-serenity",
+ "shuttle-shared-db",
+ "sqlx",
+ "thiserror",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "shuttle-codegen"
 version = "0.45.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3189,24 +3207,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.60",
-]
-
-[[package]]
-name = "ubiquitimes-cardiac"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "domain",
- "message_sender",
- "poise",
- "repository",
- "shuttle-runtime",
- "shuttle-serenity",
- "shuttle-shared-db",
- "sqlx",
- "thiserror",
- "tokio",
- "tracing",
 ]
 
 [[package]]
