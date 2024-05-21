@@ -1,3 +1,14 @@
+[workspace.package]
+name = "ubiquitimes-cardiac"
+version = "0.1.0"
+edition = "2021"
+authors = ["neruneruna7"]
+description = """
+Times(ソフトウェアエンジニア系のコミュニティにおいてよくある，内部Twitterのようなものだと思っている．由来は知らない)に書き込んだ内容を，他のDiscordサーバーにも同時に書き込むBot．
+"""
+publish = false
+
+
 [workspace]
 resolver = "2"
 members = [
