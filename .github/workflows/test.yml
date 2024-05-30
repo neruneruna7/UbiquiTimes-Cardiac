@@ -12,12 +12,34 @@ env:
 
 jobs:
   test:
-
+    # ubuntuで動かす
     runs-on: ubuntu-latest
+    # postgresをサービスコンテナで動かす
+    services:
+      postgres:
+        image: postgres:12
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        # PostgreSQLが起動するまで待つ
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+
+    - name: Install dependencies
+    # psqlコマンドを使うためにlibpq-devをインストール
+      run: sudo apt-get install libpq-dev
+
+    - name: Setup PostgreSQL with schema
+    # api/db/schema.sqlを実行する
+    # スキーマのあるファイルの位置に依存している
+      run: |
+        psql ${{ env.DATABASE_URL }} < api/db/schema.sql
 
     - name: Cache cargo registry
       uses: actions/cache@v4
@@ -31,7 +53,7 @@ jobs:
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
     - name: Build test
-      run: cargo build --release --verbose
+      run: cargo build --verbose
     - name: Run tests
       run: cargo test --verbose
     - name: Lint with clippy
