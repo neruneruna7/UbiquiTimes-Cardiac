@@ -5,10 +5,10 @@ pub trait TimesMessageSender {
     type Message;
     // テキストは別途用意する
     // コマンドの引数としてわたってくるから，それを使う
-    async fn send_all(
+    fn send_all(
         &self,
         message: &Self::Message,
         text: String,
         times: Vec<UtTime>,
-    ) -> Result<(), Self::Error>;
+    ) -> impl std::future::Future<Output = Result<(), Self::Error>> + Send;
 }
