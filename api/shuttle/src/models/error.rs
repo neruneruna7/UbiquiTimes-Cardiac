@@ -10,36 +10,36 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum UbiquiTimesCardiacError {
     #[error("std error: {0}")]
-    StdError(#[from] Box<dyn std::error::Error + Send + Sync>),
+    Std(#[from] Box<dyn std::error::Error + Send + Sync>),
     #[error("shuttle runtime error: {0}")]
-    ShuttleRuntimeError(#[from] shuttle_runtime::Error),
+    ShuttleRuntime(#[from] shuttle_runtime::Error),
     #[error("serenity error: {0}")]
-    SerenityError(#[from] serenity::Error),
+    Serenity(#[from] serenity::Error),
     #[error("guild repository error: {0}")]
-    GuildRepositoryError(#[from] PostgresGuildRepositoryError),
+    GuildRepository(#[from] PostgresGuildRepositoryError),
     #[error("times repository error: {0}")]
-    TimesRepositoryError(#[from] PostgresTimesRepositoryError),
+    TimesRepository(#[from] PostgresTimesRepositoryError),
     #[error("guild get error: {0}")]
-    GuildGetError(#[from] GuildGetError),
+    GuildNotFound(#[from] GuildNotFound),
     #[error("user get error: {0}")]
-    UserGetError(#[from] UserGetError),
+    UserNotFound(#[from] UserNotFound),
     #[error("poise webhook message sender error: {0}")]
-    PoiseWebhookMessageSenderError(#[from] PoiseWebhookMessageSenderError),
+    PoiseWebhookMessageSender(#[from] PoiseWebhookMessageSenderError),
 }
 
 pub type UbiquiTimesCardiacResult<T> = Result<T, UbiquiTimesCardiacError>;
 
 // Guild情報を取得できないエラー
 #[derive(Debug, Clone)]
-pub struct GuildGetError;
+pub struct GuildNotFound;
 
-impl std::fmt::Display for GuildGetError {
+impl std::fmt::Display for GuildNotFound {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "GuildGetError")
+        write!(f, "GuildNotFound")
     }
 }
 
-impl std::error::Error for GuildGetError {
+impl std::error::Error for GuildNotFound {
     // Errorトレイトが必要だからってつけてみたけど，全然知らないやつだこれ
     // あとで調べて実装する．今回はあとまわし
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
@@ -56,15 +56,15 @@ impl std::error::Error for GuildGetError {
 }
 
 #[derive(Debug, Clone)]
-pub struct UserGetError;
+pub struct UserNotFound;
 
-impl std::fmt::Display for UserGetError {
+impl std::fmt::Display for UserNotFound {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "UserGetError")
+        write!(f, "UserNotFound")
     }
 }
 
-impl std::error::Error for UserGetError {
+impl std::error::Error for UserNotFound {
     fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
         None
     }

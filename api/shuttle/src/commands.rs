@@ -18,7 +18,7 @@
 // 	- 保存されたTimes情報のchannel_idと一致しない場合，チャンネル不一致として弾く
 // 	- 実行したギルド以外の，Timesが登録されているすべてのギルドへ同じ内容を送信する
 
-use crate::models::error::GuildGetError;
+use crate::models::error::GuildNotFound;
 use crate::models::{Context, UbiquiTimesCardiacResult as Result};
 use crate::ubiquitimes_user_name::ubiquitimes_user_name;
 use crate::webhook_name::webhook_name;
@@ -68,8 +68,8 @@ pub async fn help(
 /// 現在は誰が実行しても同じです
 /// guild_idとguild_nameをbot側に保存します
 pub async fn ut_c_guild_init(ctx: Context<'_>) -> Result<()> {
-    let guild_id = ctx.guild_id().ok_or(GuildGetError)?.get();
-    let guild_name = ctx.guild().ok_or(GuildGetError)?.name.clone();
+    let guild_id = ctx.guild_id().ok_or(GuildNotFound)?.get();
+    let guild_name = ctx.guild().ok_or(GuildNotFound)?.name.clone();
 
     let guilds_repository = ctx.data().guild_repository.clone();
     let guild = UtGuild::new(guild_id, Some(guild_name.clone()));
@@ -94,7 +94,7 @@ pub async fn ut_c_times_set(
     #[description = "このギルドで使用する名前"] user_name: String,
 ) -> Result<()> {
     let user_id = ctx.author().id.get();
-    let guild_id = ctx.guild_id().ok_or(GuildGetError)?.get();
+    let guild_id = ctx.guild_id().ok_or(GuildNotFound)?.get();
     let channel_id = ctx.channel_id();
     let channel_id_u64 = channel_id.get();
 
@@ -149,7 +149,7 @@ pub async fn ut_c_times_set(
 /// あなたのTimes情報を削除します
 pub async fn ut_c_times_delete(ctx: Context<'_>) -> Result<()> {
     let user_id = ctx.author().id.get();
-    let guild_id = ctx.guild_id().ok_or(GuildGetError)?.get();
+    let guild_id = ctx.guild_id().ok_or(GuildNotFound)?.get();
 
     let times_repository = ctx.data().times_repository.clone();
     times_repository.delete_time(user_id, guild_id).await?;
@@ -194,7 +194,7 @@ pub async fn ut_c_times_release(
     let times = times_repository.get_times(user_id).await?;
 
     // Timesから，発信元のguild_idを持ったTimeを削除
-    let guild_id = ctx.guild_id().ok_or(GuildGetError)?.get();
+    let guild_id = ctx.guild_id().ok_or(GuildNotFound)?.get();
     let times = times
         .into_iter()
         .filter(|t| t.guild_id != guild_id)
