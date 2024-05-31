@@ -39,7 +39,7 @@ jobs:
     # api/db/schema.sqlを実行する
     # スキーマのあるファイルの位置に依存している
       run: |
-        psql ${{ env.DATABASE_URL }} < api/db/schema.sql
+        psql -h localhost -p 5432 -U postgres -d test_db < api/db/schema.sql
 
     - name: Cache cargo registry
       uses: actions/cache@v4
