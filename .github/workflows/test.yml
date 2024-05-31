@@ -52,6 +52,8 @@ jobs:
           target/
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
+      env:
+        DATABASE_URL: postgres://postgres:postgres@localhost/test_db
     - name: Build test
       run: cargo build --verbose
     - name: Run tests
