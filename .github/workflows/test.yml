@@ -20,7 +20,7 @@ jobs:
         image: postgres:12
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: password
+          POSTGRES_PASSWORD: postgres
           POSTGRES_DB: postgres
         ports:
           - 5432:5432
@@ -39,7 +39,7 @@ jobs:
     # api/db/schema.sqlを実行する
     # スキーマのあるファイルの位置に依存している
       run: |
-        psql -h localhost -p 5432 -U postgres -d test_db < api/db/schema.sql
+        PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d test_db < api/db/schema.sql
 
     - name: Cache cargo registry
       uses: actions/cache@v4
