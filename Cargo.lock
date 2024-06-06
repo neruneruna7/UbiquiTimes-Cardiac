@@ -2109,7 +2109,6 @@ dependencies = [
  "domain",
  "dotenvy",
  "num-bigint",
- "once_cell",
  "rand",
  "sqlx",
  "testcontainers",
