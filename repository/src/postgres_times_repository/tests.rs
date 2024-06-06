@@ -1,6 +1,8 @@
 // 外部キー制約の都合，guildsテーブルにもデータを入れる必要がある
 use super::*;
-use crate::{postgres_guild_repository::PostgresGuildRepository, test_utils::setup_postgres_testcontainer};
+use crate::{
+    postgres_guild_repository::PostgresGuildRepository, test_utils::setup_postgres_testcontainer,
+};
 use domain::{models::UtGuild, repository::GuildRepository};
 use sqlx::PgPool;
 
