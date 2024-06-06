@@ -12,7 +12,7 @@ env:
   RUSTFLAGS: "-Dwarnings"
 
 jobs:
-  teset:
+  test:
         # ubuntuで動かす
     runs-on: ubuntu-latest
 
