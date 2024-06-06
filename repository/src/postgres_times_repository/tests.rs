@@ -1,12 +1,11 @@
 // 外部キー制約の都合，guildsテーブルにもデータを入れる必要がある
 use super::*;
-use crate::postgres_guild_repository::PostgresGuildRepository;
+use crate::{
+    postgres_guild_repository::PostgresGuildRepository, test_utils::setup_postgres_testcontainer,
+};
 use domain::{models::UtGuild, repository::GuildRepository};
-use dotenvy::dotenv;
-use sqlx::{postgres::PgPoolOptions, PgPool};
-use std::env;
+use sqlx::PgPool;
 
-#[cfg(test)]
 use crate::test_utils::generate_random_20_digits;
 
 async fn setup_guilds_from_times(pool: &PgPool, times: Vec<UtTime>) {
@@ -25,12 +24,7 @@ async fn setup_guilds_from_times(pool: &PgPool, times: Vec<UtTime>) {
 #[tokio::test]
 /// upsert_and_return_old_timeを１度実行し，その際に成功するかどうかを確認する
 async fn test_upsert_and_return_old_time() {
-    dotenv().ok();
-
-    let pool = PgPoolOptions::new()
-        .connect(&env::var("DATABASE_URL").expect("DATABASE_URL must be set"))
-        .await
-        .unwrap();
+    let (_container, pool) = setup_postgres_testcontainer().await;
 
     let user_id = generate_random_20_digits();
     let guild_id = generate_random_20_digits();
@@ -62,12 +56,7 @@ async fn test_upsert_and_return_old_time() {
 #[tokio::test]
 /// upsert_and_return_old_timeとget_timesを実行し，入れた値と取り出した値が一致するかどうかを確認する
 async fn test_get_time() {
-    dotenv().ok();
-
-    let pool = PgPoolOptions::new()
-        .connect(&env::var("DATABASE_URL").expect("DATABASE_URL must be set"))
-        .await
-        .unwrap();
+    let (_container, pool) = setup_postgres_testcontainer().await;
 
     let user_id = generate_random_20_digits();
     let guild_id = generate_random_20_digits();
@@ -102,12 +91,7 @@ async fn test_get_time() {
 #[tokio::test]
 /// 複数のtimeを入れた場合，正しく取り出せるかどうかを確認する
 async fn test_gets_times() {
-    dotenv().ok();
-
-    let pool = PgPoolOptions::new()
-        .connect(&env::var("DATABASE_URL").expect("DATABASE_URL must be set"))
-        .await
-        .unwrap();
+    let (_container, pool) = setup_postgres_testcontainer().await;
 
     let user_id = generate_random_20_digits();
     let guild_id_1 = generate_random_20_digits();
@@ -165,12 +149,7 @@ async fn test_gets_times() {
 #[tokio::test]
 /// upsert_and_return_old_timeを２度実行した場合，正しく更新されるかどうかを確認する
 async fn test_upsert_and_return_old_time_twice() {
-    dotenv().ok();
-
-    let pool = PgPoolOptions::new()
-        .connect(&env::var("DATABASE_URL").expect("DATABASE_URL must be set"))
-        .await
-        .unwrap();
+    let (_container, pool) = setup_postgres_testcontainer().await;
 
     let user_id = generate_random_20_digits();
     let guild_id = generate_random_20_digits();
@@ -224,12 +203,7 @@ async fn test_upsert_and_return_old_time_twice() {
 #[tokio::test]
 /// upsert_and_return_old_timeとdelete_timeを実行し，入れた値を削除できるかどうかを確認する
 async fn test_delete_time() {
-    dotenv().ok();
-
-    let pool = PgPoolOptions::new()
-        .connect(&env::var("DATABASE_URL").expect("DATABASE_URL must be set"))
-        .await
-        .unwrap();
+    let (_container, pool) = setup_postgres_testcontainer().await;
 
     let user_id = generate_random_20_digits();
     let guild_id = generate_random_20_digits();
@@ -267,12 +241,7 @@ async fn test_delete_time() {
 // upsertで衝突した際に戻ってくる値が正しいかどうかを確認する
 #[tokio::test]
 async fn test_upsert_conflict() {
-    dotenv().ok();
-
-    let pool = PgPoolOptions::new()
-        .connect(&env::var("DATABASE_URL").expect("DATABASE_URL must be set"))
-        .await
-        .unwrap();
+    let (_container, pool) = setup_postgres_testcontainer().await;
 
     let user_id = generate_random_20_digits();
     let guild_id = generate_random_20_digits();

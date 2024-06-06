@@ -15,7 +15,6 @@ thiserror = "1.0"
 
 domain = { path = "../domain" }
 
-# # テスト時のみの依存関係
-# [dev-dependencies]
-# Shuttleへのデプロイがクラッシュするので，常時依存にしている
 rand = "0.8"
+testcontainers = {version = "0.17.0", features = []}
+testcontainers-modules = {version = "0.5.0", features = ["postgres",]}
