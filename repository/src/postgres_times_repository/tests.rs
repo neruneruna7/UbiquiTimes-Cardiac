@@ -1,34 +1,10 @@
 // 外部キー制約の都合，guildsテーブルにもデータを入れる必要がある
 use super::*;
-use crate::postgres_guild_repository::PostgresGuildRepository;
+use crate::{postgres_guild_repository::PostgresGuildRepository, test_utils::setup_postgres_testcontainer};
 use domain::{models::UtGuild, repository::GuildRepository};
-use dotenvy::dotenv;
-use once_cell::sync::Lazy;
-use sqlx::Executor;
-use sqlx::{postgres::PgPoolOptions, PgPool};
-use testcontainers::ContainerAsync;
-use std::env;
-use testcontainers_modules::postgres::{self, Postgres};
-use testcontainers_modules::testcontainers::runners::AsyncRunner;
+use sqlx::PgPool;
 
 use crate::test_utils::generate_random_20_digits;
-
-/// コンテナの生存期間を，呼び出し元にゆだねるために，コンテナの変数を返す
-async fn setup_postgres_testcontainer() -> (ContainerAsync<Postgres> ,PgPool) {
-    let container = postgres::Postgres::default().start().await.unwrap();
-    let host_port = container.get_host_port_ipv4(5432).await.unwrap();
-    let connection_string = &format!(
-        "postgres://postgres:postgres@127.0.0.1:{host_port}/postgres",
-    );
-    let pool = PgPool::connect(connection_string).await.unwrap();
-    // スキーマをセットアップする
-    pool.execute(include_str!("../../../api/db/schema.sql"))
-        .await
-        .unwrap();
-
-    (container, pool)
-}
-
 
 async fn setup_guilds_from_times(pool: &PgPool, times: Vec<UtTime>) {
     let guild_repository = PostgresGuildRepository::new(pool.clone());
