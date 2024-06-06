@@ -14,35 +14,10 @@ jobs:
   test:
     # ubuntuで動かす
     runs-on: ubuntu-latest
-    # postgresをサービスコンテナで動かす
-    services:
-      postgres:
-        image: postgres:12
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: test_db
-        ports:
-          - 5432:5432
-        # PostgreSQLが起動するまで待つ
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-
-    env:
-      DATABASE_URL: postgres://postgres:postgres@localhost/test_db
 
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-
-    - name: Install dependencies
-    # psqlコマンドを使うためにlibpq-devをインストール
-      run: sudo apt-get install libpq-dev
-
-    - name: Setup PostgreSQL with schema
-    # api/db/schema.sqlを実行する
-    # スキーマのあるファイルの位置に依存している
-      run: |
-        PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d test_db < api/db/schema.sql
 
     - name: Cache cargo registry
       uses: actions/cache@v4
