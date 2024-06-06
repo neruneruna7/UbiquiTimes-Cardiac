@@ -1,20 +1,14 @@
 use super::*;
 use domain::models::UtGuild;
-use dotenvy::dotenv;
-use sqlx::postgres::PgPoolOptions;
-use std::env;
 
 #[cfg(test)]
 use crate::test_utils::generate_random_20_digits;
+use crate::test_utils::setup_postgres_testcontainer;
 
 #[tokio::test]
 async fn test_upsert_guild() {
-    dotenv().ok();
+    let (_container, pool) = setup_postgres_testcontainer().await;
 
-    let pool = PgPoolOptions::new()
-        .connect(&env::var("DATABASE_URL").expect("DATABASE_URL must be set"))
-        .await
-        .unwrap();
     let repository = PostgresGuildRepository::new(pool);
 
     let guild_id = generate_random_20_digits();
@@ -30,12 +24,8 @@ async fn test_upsert_guild() {
 #[tokio::test]
 async fn test_get_guild() {
     // 入れたデータと取り出したデータが一致するかどうか確認する
-    dotenv().ok();
+    let (_container, pool) = setup_postgres_testcontainer().await;
 
-    let pool = PgPoolOptions::new()
-        .connect(&env::var("DATABASE_URL").expect("DATABASE_URL must be set"))
-        .await
-        .unwrap();
     let repository = PostgresGuildRepository::new(pool);
 
     let guild_id = generate_random_20_digits();
@@ -53,12 +43,8 @@ async fn test_get_guild() {
 
 #[tokio::test]
 async fn test_delete_guild() {
-    dotenv().ok();
+    let (_container, pool) = setup_postgres_testcontainer().await;
 
-    let pool = PgPoolOptions::new()
-        .connect(&env::var("DATABASE_URL").expect("DATABASE_URL must be set"))
-        .await
-        .unwrap();
     let repository = PostgresGuildRepository::new(pool);
 
     let guild_id = generate_random_20_digits();
