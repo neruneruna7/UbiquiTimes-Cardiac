@@ -6,6 +6,7 @@ use dotenvy::dotenv;
 use once_cell::sync::Lazy;
 use sqlx::Executor;
 use sqlx::{postgres::PgPoolOptions, PgPool};
+use testcontainers::ContainerAsync;
 use std::env;
 use testcontainers_modules::postgres::{self, Postgres};
 use testcontainers_modules::testcontainers::runners::AsyncRunner;
@@ -30,14 +31,20 @@ use crate::test_utils::generate_random_20_digits;
 //     db
 // });
 
-async fn test_with_postgres() -> String {
+/// コンテナの生存期間を，呼び出し元にゆだねるために，コンテナの変数を返す
+async fn setup_postgres_testcontainer() -> (ContainerAsync<Postgres> ,PgPool) {
     let container = postgres::Postgres::default().start().await.unwrap();
     let host_port = container.get_host_port_ipv4(5432).await.unwrap();
-    panic!("host_port: {}", host_port);
     let connection_string = &format!(
         "postgres://postgres:postgres@127.0.0.1:{host_port}/postgres",
     );
-    connection_string.to_string()
+    let pool = PgPool::connect(connection_string).await.unwrap();
+    // スキーマをセットアップする
+    pool.execute(include_str!("../../../api/db/schema.sql"))
+        .await
+        .unwrap();
+
+    (container, pool)
 }
 
 
@@ -57,29 +64,7 @@ async fn setup_guilds_from_times(pool: &PgPool, times: Vec<UtTime>) {
 #[tokio::test]
 /// upsert_and_return_old_timeを１度実行し，その際に成功するかどうかを確認する
 async fn test_upsert_and_return_old_time() {
-    // dotenv().ok();
-
-    // let pool = PgPoolOptions::new()
-    //     .connect(&env::var("DATABASE_URL").expect("DATABASE_URL must be set"))
-    //     .await
-    //     .unwrap();
-
-    let container = postgres::Postgres::default().start().await.unwrap();
-    let host_port = container.get_host_port_ipv4(5432).await.unwrap();
-    // panic!("host_port: {}", host_port);
-    let connection_string = &format!(
-        "postgres://postgres:postgres@127.0.0.1:{host_port}/postgres",
-    );
-    // connection_string.to_string()
-
-
-    // let conn_url = test_with_postgres().await;
-    let conn_url = connection_string.to_string();
-    let pool = PgPool::connect(&conn_url).await.unwrap();
-    // スキーマをセットアップする
-    pool.execute(include_str!("../../../api/db/schema.sql"))
-        .await
-        .unwrap();
+    let (_container, pool) = setup_postgres_testcontainer().await;
 
     let user_id = generate_random_20_digits();
     let guild_id = generate_random_20_digits();
