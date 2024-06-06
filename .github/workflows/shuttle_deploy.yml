@@ -44,8 +44,6 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - name: test
-        uses: ./.github/test_action.yml
       - name: Deploy
         uses: shuttle-hq/deploy-action@main
         with:
