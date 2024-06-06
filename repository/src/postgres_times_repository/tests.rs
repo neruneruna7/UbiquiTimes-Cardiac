@@ -3,11 +3,43 @@ use super::*;
 use crate::postgres_guild_repository::PostgresGuildRepository;
 use domain::{models::UtGuild, repository::GuildRepository};
 use dotenvy::dotenv;
+use once_cell::sync::Lazy;
+use sqlx::Executor;
 use sqlx::{postgres::PgPoolOptions, PgPool};
 use std::env;
+use testcontainers_modules::postgres::{self, Postgres};
+use testcontainers_modules::testcontainers::runners::AsyncRunner;
 
-#[cfg(test)]
 use crate::test_utils::generate_random_20_digits;
+
+// static TEST_CONTAINER: Lazy<PgPool> = Lazy::new(|| {
+
+//     // let docker = Cli::default();
+//     // let node = docker.run(Postgres::default());
+
+//     let node = Postgres::default().start().await.unwrap();
+
+//     // prepare connection string
+//     let connection_string = &format!(
+//         "postgres://postgres:postgres@127.0.0.1:{}/postgres",
+//         node.get_host_port_ipv4(5432)
+//     );
+
+//     let db: PgPool = PgPool::connect(&connection_string).await.unwrap();
+
+//     db
+// });
+
+async fn test_with_postgres() -> String {
+    let container = postgres::Postgres::default().start().await.unwrap();
+    let host_port = container.get_host_port_ipv4(5432).await.unwrap();
+    panic!("host_port: {}", host_port);
+    let connection_string = &format!(
+        "postgres://postgres:postgres@127.0.0.1:{host_port}/postgres",
+    );
+    connection_string.to_string()
+}
+
 
 async fn setup_guilds_from_times(pool: &PgPool, times: Vec<UtTime>) {
     let guild_repository = PostgresGuildRepository::new(pool.clone());
@@ -25,10 +57,27 @@ async fn setup_guilds_from_times(pool: &PgPool, times: Vec<UtTime>) {
 #[tokio::test]
 /// upsert_and_return_old_timeを１度実行し，その際に成功するかどうかを確認する
 async fn test_upsert_and_return_old_time() {
-    dotenv().ok();
+    // dotenv().ok();
 
-    let pool = PgPoolOptions::new()
-        .connect(&env::var("DATABASE_URL").expect("DATABASE_URL must be set"))
+    // let pool = PgPoolOptions::new()
+    //     .connect(&env::var("DATABASE_URL").expect("DATABASE_URL must be set"))
+    //     .await
+    //     .unwrap();
+
+    let container = postgres::Postgres::default().start().await.unwrap();
+    let host_port = container.get_host_port_ipv4(5432).await.unwrap();
+    // panic!("host_port: {}", host_port);
+    let connection_string = &format!(
+        "postgres://postgres:postgres@127.0.0.1:{host_port}/postgres",
+    );
+    // connection_string.to_string()
+
+
+    // let conn_url = test_with_postgres().await;
+    let conn_url = connection_string.to_string();
+    let pool = PgPool::connect(&conn_url).await.unwrap();
+    // スキーマをセットアップする
+    pool.execute(include_str!("../../../api/db/schema.sql"))
         .await
         .unwrap();
 
