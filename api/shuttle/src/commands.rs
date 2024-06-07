@@ -169,9 +169,8 @@ pub async fn ut_c_times_delete(ctx: Context<'_>) -> Result<()> {
 pub async fn ut_c_times_release(
     ctx: Context<'_>,
     // 複数行のメッセージを受け取るためにVec<String>を使用
-    #[description = "message"] content: Vec<String>,
+    #[description = "message"] _content: Vec<String>,
 ) -> Result<()> {
-    info!("message: {:?}", content);
     let prefix_ctx = match &ctx {
         poise::Context::Application(_) => {
             // スラッシュコマンド非対応なのに，なぜスラッシュコマンドとして呼ぶことも許可しているのか？
@@ -185,8 +184,9 @@ pub async fn ut_c_times_release(
     };
     info!("prefix command");
 
-    // ベクタを改行でつなげて，元の文字列に戻す
-    let content = content.join("\n");
+    // 最初の~UTを削除
+    let content = prefix_ctx.msg.content.trim_start_matches("~UT\n").to_string();
+    info!("content: {:?}", content);
 
     let user_id = ctx.author().id.get();
 
