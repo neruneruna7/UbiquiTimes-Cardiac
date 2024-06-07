@@ -186,7 +186,11 @@ pub async fn ut_c_times_release(
     info!("prefix command");
 
     // 最初の~UTを削除
-    let content = prefix_ctx.msg.content.trim_start_matches("~UT\n").to_string();
+    let content = prefix_ctx
+        .msg
+        .content
+        .trim_start_matches("~UT\n")
+        .to_string();
     info!("content: {:?}", content);
 
     let user_id = ctx.author().id.get();
