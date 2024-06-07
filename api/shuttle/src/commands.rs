@@ -169,6 +169,7 @@ pub async fn ut_c_times_delete(ctx: Context<'_>) -> Result<()> {
 pub async fn ut_c_times_release(
     ctx: Context<'_>,
     // 複数行のメッセージを受け取るためにVec<String>を使用
+    // 使用されないが，引数がないとエラーになるため，ダミーの引数を追加
     #[description = "message"] _content: Vec<String>,
 ) -> Result<()> {
     let prefix_ctx = match &ctx {
