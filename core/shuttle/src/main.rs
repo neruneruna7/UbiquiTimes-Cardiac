@@ -1,10 +1,10 @@
 use anyhow::Context as _;
-use discord::start_discord_bot;
+use discord::publisher::{start_discord_bot, DiscordArg};
 use shuttle_runtime::{CustomError, SecretStore};
 use slack::start_slack_bot;
 use sqlx::{Executor as _, PgPool};
-use tracing::info;
 use tokio::sync::mpsc;
+use tracing::info;
 
 #[shuttle_runtime::main]
 async fn shuttle_main(
@@ -38,7 +38,7 @@ impl shuttle_runtime::Service for UbiquiTimesService {
 
         let (tx, mut rx) = mpsc::channel(100);
 
-        let discord_arg = discord::DiscordArg {
+        let discord_arg = DiscordArg {
             discord_bot_token: discord_token,
             pool: self.pool.clone(),
             channel: tx,

@@ -5,7 +5,9 @@ use share::{
 };
 use tracing::info;
 
-use crate::{repository::Repository, Context, Error};
+use crate::repository::Repository;
+
+use super::{Context, Error};
 
 #[poise::command(prefix_command, track_edits, aliases("UtTimesSet"), slash_command)]
 #[tracing::instrument(skip(ctx))]
