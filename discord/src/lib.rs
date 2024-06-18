@@ -12,14 +12,9 @@ struct Data {} // User data, which is stored and accessible in all command invoc
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
 
-enum DiscordError {
-    // ここにエラーを追加する
-    
-}
 
+#[tracing::instrument(skip(arg))]
 pub async fn start_discord_bot(arg: DiscordArg) -> Result<()>{
-
-    // Get the discord token set in `Secrets.toml`
     let discord_token = arg.discord_bot_token;
 
     let framework = poise::Framework::builder()
@@ -35,7 +30,6 @@ pub async fn start_discord_bot(arg: DiscordArg) -> Result<()>{
                     Duration::from_secs(3600),
                 ))),
                 additional_prefixes: vec![
-                    poise::Prefix::Literal("hey bot"),
                     poise::Prefix::Literal("hey bot,"),
                 ],
                 ..Default::default()

@@ -1,14 +1,19 @@
 use anyhow::Context as _;
 use discord::start_discord_bot;
-use shuttle_runtime::SecretStore;
+use shuttle_runtime::{CustomError, SecretStore};
 use slack::start_slack_bot;
+use sqlx::{Executor as _, PgPool};
 use tracing::info;
 
 #[shuttle_runtime::main]
 async fn shuttle_main(
     #[shuttle_runtime::Secrets] secret_store: SecretStore,
-    // #[shuttle_shared_db::Postgres] pool: PgPool,
+    #[shuttle_shared_db::Postgres] pool: PgPool,
 ) -> Result<UbiquiTimesService, shuttle_runtime::Error> {
+    pool.execute(include_str!("../../db/schema.sql"))
+    .await
+    .map_err(CustomError::new)?;
+
     Ok(UbiquiTimesService {
         secret_store,
     })
@@ -30,7 +35,6 @@ impl shuttle_runtime::Service for UbiquiTimesService {
             .secret_store
             .get("DISCORD_TOKEN")
             .context("'DISCORD_TOKEN' was not found")?;
-
 
         let discord_arg = discord::DiscordArg {
             discord_bot_token: _discord_token,
