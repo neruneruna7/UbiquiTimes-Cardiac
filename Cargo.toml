@@ -26,8 +26,11 @@ shuttle-shared-db = { version = "0.46.0", features = ["postgres", "sqlx"] }
 sqlx = {version = "*", features = ["bigdecimal", "postgres"] }
 tracing = "0.1.37"
 tokio = "1.26.0"
+rand = "*"
 
 poise = "*"
 
 thiserror = "1.0"
 
+testcontainers = {version = "0.18.0", features = []}
+testcontainers-modules = {version = "0.6.1", features = ["postgres",]}
