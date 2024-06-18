@@ -70,6 +70,10 @@ pub(crate) struct Repository {
 }
 
 impl Repository {
+    pub(crate) fn new(pool: sqlx::PgPool) -> Self {
+        Self { pool }
+    }
+    
     #[tracing::instrument(skip(self))]
     pub async fn upsert(
         &self,

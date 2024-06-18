@@ -1,7 +1,8 @@
-use share::{model::DiscordTimes, util::ubiquitimes_user_name};
+use anyhow::Context as _;
+use share::{model::{DiscordCommunity, DiscordTimes}, util::ubiquitimes_user_name};
 use tracing::info;
 
-use crate::{Context, Error};
+use crate::{repository::Repository, Context, Error};
 
 use sqlx::Executor;
 
@@ -19,10 +20,20 @@ pub async fn ut_c_times_set(
     let channel_id = ctx.channel_id();
     let channel_id_u64 = channel_id.get();
 
+    let guild = DiscordCommunity {
+        guild_id,
+        guild_name: ctx.guild().context("guild data not found")?.name.clone(),
+    };
+
     // Ubiquitimesから拡散だとわかるように，ユーザー名にプレフィックスを付加する
     let user_name = ubiquitimes_user_name(user_name);
     // Timesを作成
     let time = DiscordTimes::new(user_id, guild_id, user_name.clone(), channel_id.get());
+
+
+    // DBに保存
+    let repository = Repository::new(ctx.data().pool.clone());
+    repository.upsert(guild, time).await?;
 
     info!(
         "new times set complete. guild_id: {}, user_id: {}, channel_id: {}",
