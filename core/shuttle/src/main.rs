@@ -4,6 +4,7 @@ use shuttle_runtime::{CustomError, SecretStore};
 use slack::start_slack_bot;
 use sqlx::{Executor as _, PgPool};
 use tracing::info;
+use tokio::sync::mpsc;
 
 #[shuttle_runtime::main]
 async fn shuttle_main(
@@ -35,9 +36,12 @@ impl shuttle_runtime::Service for UbiquiTimesService {
             .get("DISCORD_TOKEN")
             .context("'DISCORD_TOKEN' was not found")?;
 
+        let (tx, mut rx) = mpsc::channel(100);
+
         let discord_arg = discord::DiscordArg {
             discord_bot_token: discord_token,
             pool: self.pool.clone(),
+            channel: tx,
         };
         let discord_bot = tokio::spawn(start_discord_bot(discord_arg));
 

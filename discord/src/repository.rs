@@ -73,7 +73,7 @@ impl Repository {
     pub(crate) fn new(pool: sqlx::PgPool) -> Self {
         Self { pool }
     }
-    
+
     #[tracing::instrument(skip(self))]
     pub async fn upsert(
         &self,
@@ -106,7 +106,7 @@ impl Repository {
         .await?;
         Ok(())
     }
-    
+
     async fn upsert_guilds(&self, community: DiscordCommunity) -> Result<(), anyhow::Error> {
         let guild = PostgresGuild::from(community);
         let _query = sqlx::query(
@@ -126,7 +126,7 @@ impl Repository {
 
 #[cfg(test)]
 mod tests {
-    use share::test_util::{setup_postgres_testcontainer, generate_random_20_digits};
+    use share::test_util::{generate_random_20_digits, setup_postgres_testcontainer};
 
     use super::*;
 
@@ -157,17 +157,20 @@ mod tests {
         let times = PostgresTime::from(times);
 
         // Verify that the guild and times data is inserted or updated correctly
-        let guild = sqlx::query_as::<_, PostgresGuild>("SELECT * FROM discord_guilds WHERE guild_id = $1")
-            .bind(community.guild_id)
-            .fetch_one(&repository.pool)
-            .await?;
+        let guild =
+            sqlx::query_as::<_, PostgresGuild>("SELECT * FROM discord_guilds WHERE guild_id = $1")
+                .bind(community.guild_id)
+                .fetch_one(&repository.pool)
+                .await?;
         assert_eq!(guild.guild_name, community.guild_name);
 
-        let time = sqlx::query_as::<_, PostgresTime>("SELECT * FROM discord_times WHERE user_id = $1 AND guild_id = $2")
-            .bind(times.user_id)
-            .bind(times.guild_id)
-            .fetch_one(&repository.pool)
-            .await?;
+        let time = sqlx::query_as::<_, PostgresTime>(
+            "SELECT * FROM discord_times WHERE user_id = $1 AND guild_id = $2",
+        )
+        .bind(times.user_id)
+        .bind(times.guild_id)
+        .fetch_one(&repository.pool)
+        .await?;
         assert_eq!(time.user_name, times.user_name);
         assert_eq!(time.channel_id, times.channel_id);
 

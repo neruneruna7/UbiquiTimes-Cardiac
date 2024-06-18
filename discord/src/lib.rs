@@ -3,7 +3,9 @@ use std::{sync::Arc, time::Duration};
 use anyhow::{Context as _, Result};
 use command::ut_c_times_set;
 use poise::serenity_prelude::{ClientBuilder, GatewayIntents};
+use share::model::Times;
 use sqlx::PgPool;
+use tokio::sync::mpsc::{channel, Sender};
 use tracing::info;
 
 mod command;
@@ -12,10 +14,12 @@ mod repository;
 pub struct DiscordArg {
     pub discord_bot_token: String,
     pub pool: PgPool,
+    pub channel: Sender<Vec<Times>>,
 }
 
 struct Data {
     pool: PgPool,
+    channel: Sender<Vec<Times>>,
 } // User data, which is stored and accessible in all command invocations
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
@@ -56,7 +60,10 @@ pub async fn start_discord_bot(arg: DiscordArg) -> Result<()> {
         .setup(|ctx, _ready, framework| {
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                Ok(Data { pool: arg.pool })
+                Ok(Data {
+                    pool: arg.pool,
+                    channel: arg.channel,
+                })
             })
         })
         .build();

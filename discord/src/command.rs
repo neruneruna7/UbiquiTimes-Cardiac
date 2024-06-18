@@ -1,9 +1,11 @@
 use anyhow::Context as _;
-use share::{model::{DiscordCommunity, DiscordTimes}, util::ubiquitimes_user_name};
+use share::{
+    model::{DiscordCommunity, DiscordTimes},
+    util::ubiquitimes_user_name,
+};
 use tracing::info;
 
 use crate::{repository::Repository, Context, Error};
-
 
 #[poise::command(prefix_command, track_edits, aliases("UtTimesSet"), slash_command)]
 #[tracing::instrument(skip(ctx))]
