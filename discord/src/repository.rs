@@ -211,7 +211,7 @@ mod tests {
         let repository = Repository::new(pool);
         // Create test data
         let user_id = generate_random_20_digits();
-        
+
         let guild_id1 = generate_random_20_digits();
         let guild1 = DiscordCommunity {
             guild_id: guild_id1,
@@ -223,7 +223,7 @@ mod tests {
             guild_id: guild_id2,
             guild_name: "Test Guild 2".to_string(),
         };
-        let mut times = vec![
+        let times = vec![
             (
                 guild1,
                 DiscordTimes {
@@ -250,8 +250,11 @@ mod tests {
         }
         // Call the read_times method
         let mut fetched_times = repository.read_times(user_id).await?;
-        
-        let mut times = times.into_iter().map(|(_, t)| t).collect::<Vec<DiscordTimes>>();
+
+        let mut times = times
+            .into_iter()
+            .map(|(_, t)| t)
+            .collect::<Vec<DiscordTimes>>();
         times.sort_by_key(|x| (x.guild_id, x.user_id));
         fetched_times.sort_by_key(|x| (x.guild_id, x.user_id));
         // Verify that the correct number of times are fetched
