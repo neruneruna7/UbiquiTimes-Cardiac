@@ -1,15 +1,24 @@
+use anyhow::Context as _;
 use discord::start_discord_bot;
+use shuttle_runtime::SecretStore;
 use slack::start_slack_bot;
 use tracing::info;
 
 #[shuttle_runtime::main]
-async fn shuttle_main() -> Result<UbiquiTimesService, shuttle_runtime::Error> {
-    Ok(UbiquiTimesService {})
+async fn shuttle_main(
+    #[shuttle_runtime::Secrets] secret_store: SecretStore,
+    // #[shuttle_shared_db::Postgres] pool: PgPool,
+) -> Result<UbiquiTimesService, shuttle_runtime::Error> {
+    Ok(UbiquiTimesService {
+        secret_store,
+    })
 }
 
 // Customize this struct with things from `shuttle_main` needed in `bind`,
 // such as secrets or database connections
-struct UbiquiTimesService {}
+struct UbiquiTimesService {
+    secret_store: SecretStore,
+}
 
 #[shuttle_runtime::async_trait]
 impl shuttle_runtime::Service for UbiquiTimesService {
@@ -17,8 +26,19 @@ impl shuttle_runtime::Service for UbiquiTimesService {
         // Start your service and bind to the socket address
         println!("addr: {:?}", _addr);
 
-        let discord_bot = tokio::spawn(start_discord_bot());
+        let _discord_token = self
+            .secret_store
+            .get("DISCORD_TOKEN")
+            .context("'DISCORD_TOKEN' was not found")?;
+
+
+        let discord_arg = discord::DiscordArg {
+            discord_bot_token: _discord_token,
+        };
+        let discord_bot = tokio::spawn(start_discord_bot(discord_arg));
+
         let slack_bot = tokio::spawn(start_slack_bot());
+
         tokio::select! {
             _ = discord_bot => {
                 info!("Discord bot finished");

@@ -13,6 +13,21 @@ publish = false
 resolver = "2"
 members = [
     "core/shuttle", 
-    "discord", 
+    "discord", "share", 
     "slack", 
 ]
+
+[workspace.dependencies]
+anyhow = "1.0.68"
+shuttle-runtime = "0.46.0"
+# Since poise is a serenity command framework, it can run on Shuttle with shuttle-serenity
+shuttle-serenity = "0.46.0"
+shuttle-shared-db = { version = "0.46.0", features = ["postgres", "sqlx"] }
+sqlx = {version = "*", features = ["bigdecimal", "postgres"] }
+tracing = "0.1.37"
+tokio = "1.26.0"
+
+poise = "*"
+
+thiserror = "1.0"
+
