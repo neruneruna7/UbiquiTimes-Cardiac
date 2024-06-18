@@ -12,6 +12,7 @@ publish = false
 [workspace]
 resolver = "2"
 members = [
-    "api/shuttle", "domain", "message_sender",
-    "repository",
+    "core/shuttle", 
+    # "domain", "message_sender",
+    # "repository",
 ]
