@@ -1,0 +1,9 @@
+[package]
+name="discord"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+description.workspace = true
+publish.workspace = true
+
+[dependencies]

@@ -12,7 +12,7 @@ publish = false
 [workspace]
 resolver = "2"
 members = [
-    "core/shuttle", 
+    "core/shuttle", "discord", "slack", 
     # "domain", "message_sender",
     # "repository",
 ]

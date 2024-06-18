@@ -598,6 +598,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "discord"
+version = "0.1.0"
+
+[[package]]
 name = "dotenvy"
 version = "0.15.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2335,6 +2339,10 @@ checksum = "8f92a496fb766b417c996b9c5e57daf2f7ad3b0bebe1ccfca4856390e3d3bb67"
 dependencies = [
  "autocfg",
 ]
+
+[[package]]
+name = "slack"
+version = "0.1.0"
 
 [[package]]
 name = "smallvec"
