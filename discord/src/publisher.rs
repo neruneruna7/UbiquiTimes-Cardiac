@@ -2,7 +2,7 @@ use std::{sync::Arc, time::Duration};
 
 use anyhow::{Context as _, Result};
 
-use command::ut_c_times_set;
+use command::*;
 
 use poise::serenity_prelude::{ClientBuilder, GatewayIntents};
 
@@ -38,7 +38,7 @@ pub async fn start_discord_bot(arg: DiscordArg) -> Result<()> {
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![hello(), help(), ut_c_times_set()],
+            commands: vec![hello(), help(), ut_c_times_set(), register()],
             // ここでprefixを設定する
             prefix_options: poise::PrefixFrameworkOptions {
                 prefix: Some("~".into()),
