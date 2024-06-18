@@ -75,12 +75,12 @@ pub async fn ut_c_guild_init(ctx: Context<'_>) -> Result<()> {
     let guild = UtGuild::new(guild_id, Some(guild_name.clone()));
     guilds_repository.upsert_guild(guild).await?;
 
-    let reply_mesage = format!(
+    let reply_message = format!(
         "Success! Welcome {},  I learned this guild! {}",
         guild_name, guild_id
     );
 
-    ctx.say(reply_mesage).await?;
+    ctx.say(reply_message).await?;
     Ok(())
 }
 
@@ -135,12 +135,12 @@ pub async fn ut_c_times_set(
         guild_id, user_id, channel_id_u64, webhook_url
     );
 
-    let reply_mesage = format!(
+    let reply_message = format!(
         "Success! Hello {}, I learned that this channel is your Times!",
         user_name
     );
 
-    ctx.say(reply_mesage).await?;
+    ctx.say(reply_message).await?;
     Ok(())
 }
 

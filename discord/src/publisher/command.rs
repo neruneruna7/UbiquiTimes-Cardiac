@@ -42,12 +42,12 @@ pub async fn ut_c_times_set(
         guild_id, user_id, channel_id_u64
     );
 
-    let reply_mesage = format!(
+    let reply_message = format!(
         "Success! Hello {}, I learned that this channel is your Times!",
         user_name
     );
 
-    ctx.say(reply_mesage).await?;
+    ctx.say(reply_message).await?;
     Ok(())
 }
 

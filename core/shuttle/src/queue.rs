@@ -10,6 +10,7 @@ pub async fn queue(
     mut receiver: Receiver<Vec<Times>>,
     sender: Sender<Vec<Times>>,
 ) -> anyhow::Result<()> {
+    info!("queue start");
     loop {
         let times = receiver.recv().await;
         match times {
