@@ -1,37 +1,38 @@
 use std::{sync::Arc, time::Duration};
 
-use poise::serenity_prelude::{ClientBuilder, GatewayIntents};
-use tracing::info;
 use anyhow::{Context as _, Result};
+use poise::serenity_prelude::{ClientBuilder, GatewayIntents};
+use sqlx::PgPool;
+use tracing::info;
+
+mod command;
+mod repository;
 
 pub struct DiscordArg {
     pub discord_bot_token: String,
+    pub pool: PgPool,
 }
 
-struct Data {} // User data, which is stored and accessible in all command invocations
+struct Data {
+    pool: PgPool,
+} // User data, which is stored and accessible in all command invocations
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type Context<'a> = poise::Context<'a, Data, Error>;
 
-
 #[tracing::instrument(skip(arg))]
-pub async fn start_discord_bot(arg: DiscordArg) -> Result<()>{
+pub async fn start_discord_bot(arg: DiscordArg) -> Result<()> {
     let discord_token = arg.discord_bot_token;
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![
-                hello(),
-                help(),
-            ],
+            commands: vec![hello(), help()],
             // ここでprefixを設定する
             prefix_options: poise::PrefixFrameworkOptions {
                 prefix: Some("~".into()),
                 edit_tracker: Some(Arc::new(poise::EditTracker::for_timespan(
                     Duration::from_secs(3600),
                 ))),
-                additional_prefixes: vec![
-                    poise::Prefix::Literal("hey bot,"),
-                ],
+                additional_prefixes: vec![poise::Prefix::Literal("hey bot,")],
                 ..Default::default()
             },
             // This code is run before every command
@@ -54,8 +55,7 @@ pub async fn start_discord_bot(arg: DiscordArg) -> Result<()>{
         .setup(|ctx, _ready, framework| {
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                Ok(Data {
-                })
+                Ok(Data { pool: arg.pool })
             })
         })
         .build();

@@ -614,7 +614,9 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "poise",
+ "share",
  "shuttle-serenity",
+ "sqlx",
  "thiserror",
  "tracing",
 ]

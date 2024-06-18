@@ -12,3 +12,6 @@ poise.workspace = true
 tracing.workspace = true
 anyhow.workspace = true
 thiserror.workspace = true
+sqlx =  {workspace = true, features = ["bigdecimal", "postgres"]}
+
+share = {path = "../share"}
