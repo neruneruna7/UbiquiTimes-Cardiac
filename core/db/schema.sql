@@ -3,8 +3,8 @@
 DROP TABLE IF EXISTS Times;
 DROP TABLE IF EXISTS Guilds;
 
-DROP TABLE IF EXISTS times_v2;
-DROP TABLE IF EXISTS guilds_v2;
+DROP TABLE IF EXISTS discord_times;
+DROP TABLE IF EXISTS discord_guilds;
 
 
 -- guild_id等が数字で表せたのはDiscordの話で，Slackなどでは文字列で表される
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS discord_times (
     user_name VARCHAR(255) NOT NULL,
     channel_id NUMERIC(20) NOT NULL,
     PRIMARY KEY (user_id, guild_id),
-    FOREIGN KEY (guild_id) REFERENCES guilds_v2(guild_id)
+    FOREIGN KEY (guild_id) REFERENCES discord_guilds(guild_id)
 );
 
 CREATE TABLE IF NOT EXISTS slack_guilds (
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS slack_times (
     user_name VARCHAR(255) NOT NULL,
     channel_id TEXT NOT NULL,
     PRIMARY KEY (user_id, guild_id),
-    FOREIGN KEY (guild_id) REFERENCES guilds_v2(guild_id)
+    FOREIGN KEY (guild_id) REFERENCES slack_guilds(guild_id)
 );
 
 

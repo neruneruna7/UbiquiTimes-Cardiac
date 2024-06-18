@@ -701,6 +701,7 @@ dependencies = [
  "shuttle-serenity",
  "sqlx",
  "thiserror",
+ "tokio",
  "tracing",
 ]
 

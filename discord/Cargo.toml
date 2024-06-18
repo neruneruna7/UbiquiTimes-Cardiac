@@ -13,5 +13,6 @@ tracing.workspace = true
 anyhow.workspace = true
 thiserror.workspace = true
 sqlx =  {workspace = true, features = ["bigdecimal", "postgres"]}
+tokio.workspace = true
 
 share = {path = "../share"}

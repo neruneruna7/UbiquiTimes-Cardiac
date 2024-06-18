@@ -87,9 +87,12 @@ impl Repository {
 
     async fn upsert_times(&self, times: DiscordTimes) -> Result<(), anyhow::Error> {
         let times = PostgresTime::from(times);
-        let query = sqlx::query(
-            "INSERT INTO times (user_id, guild_id, user_name, channel_id) VALUES ($1, $2, $3, $4) \
-            ON CONFLICT (user_id, guild_id) DO UPDATE SET user_name = $3, channel_id = $4",
+        let _query = sqlx::query(
+            r"
+            INSERT INTO discord_times (user_id, guild_id, user_name, channel_id) 
+            VALUES ($1, $2, $3, $4)
+            ON CONFLICT (user_id, guild_id) 
+            DO UPDATE SET user_name = $3, channel_id = $4",
         )
         .bind(times.user_id)
         .bind(times.guild_id)
@@ -102,14 +105,68 @@ impl Repository {
     
     async fn upsert_guilds(&self, community: DiscordCommunity) -> Result<(), anyhow::Error> {
         let guild = PostgresGuild::from(community);
-        let query = sqlx::query(
-            "INSERT INTO guilds (guild_id, guild_name) VALUES ($1, $2) \
-            ON CONFLICT (guild_id) DO UPDATE SET guild_name = $2",
+        let _query = sqlx::query(
+            r"
+            INSERT INTO discord_guilds (guild_id, guild_name) 
+            VALUES ($1, $2)
+            ON CONFLICT (guild_id) 
+            DO UPDATE SET guild_name = $2",
         )
         .bind(guild.guild_id)
         .bind(guild.guild_name)
         .execute(&self.pool)
         .await?;
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use share::test_util::{setup_postgres_testcontainer, generate_random_20_digits};
+
+    use super::*;
+
+    #[tokio::test]
+    async fn test_upsert() -> Result<(), anyhow::Error> {
+        // Create a new database pool for testing
+        let (_container, pool) = setup_postgres_testcontainer().await;
+        // Create a new instance of the Repository
+        let repository = Repository { pool };
+
+        // Create test data
+        let community = DiscordCommunity {
+            guild_id: generate_random_20_digits(),
+            guild_name: "Test Guild".to_string(),
+        };
+
+        let times = DiscordTimes {
+            user_id: generate_random_20_digits(),
+            guild_id: community.guild_id,
+            user_name: "Test User".to_string(),
+            channel_id: generate_random_20_digits(),
+        };
+
+        // Call the upsert method
+        repository.upsert(community.clone(), times.clone()).await?;
+
+        let community = PostgresGuild::from(community);
+        let times = PostgresTime::from(times);
+
+        // Verify that the guild and times data is inserted or updated correctly
+        let guild = sqlx::query_as::<_, PostgresGuild>("SELECT * FROM discord_guilds WHERE guild_id = $1")
+            .bind(community.guild_id)
+            .fetch_one(&repository.pool)
+            .await?;
+        assert_eq!(guild.guild_name, community.guild_name);
+
+        let time = sqlx::query_as::<_, PostgresTime>("SELECT * FROM discord_times WHERE user_id = $1 AND guild_id = $2")
+            .bind(times.user_id)
+            .bind(times.guild_id)
+            .fetch_one(&repository.pool)
+            .await?;
+        assert_eq!(time.user_name, times.user_name);
+        assert_eq!(time.channel_id, times.channel_id);
+
         Ok(())
     }
 }
