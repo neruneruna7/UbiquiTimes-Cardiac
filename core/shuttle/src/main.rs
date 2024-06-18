@@ -1,22 +1,24 @@
-use std::sync::Arc;
-use std::time::Duration;
-
-use anyhow::Context as _;
-
-use poise::serenity_prelude::{ClientBuilder, GatewayIntents};
-use shuttle_runtime::{CustomError, SecretStore};
-use shuttle_serenity::ShuttleSerenity;
-use sqlx::{Executor, PgPool};
-
-use tracing::info;
-
 #[shuttle_runtime::main]
-async fn main(
-    #[shuttle_runtime::Secrets] secret_store: SecretStore,
-    #[shuttle_shared_db::Postgres] pool: PgPool,
-) -> ShuttleSerenity {
-    // dbのセットアップ
-    // Create the tables if they don't exist yet
-    // Ok()
-    todo!()
+async fn shuttle_main() -> Result<UbiquiTimesService, shuttle_runtime::Error> {
+    Ok(UbiquiTimesService {})
+}
+
+// Customize this struct with things from `shuttle_main` needed in `bind`,
+// such as secrets or database connections
+struct UbiquiTimesService {}
+
+#[shuttle_runtime::async_trait]
+impl shuttle_runtime::Service for UbiquiTimesService {
+    async fn bind(self, _addr: std::net::SocketAddr) -> Result<(), shuttle_runtime::Error> {
+        // Start your service and bind to the socket address
+        println!("addr: {:?}", _addr);
+
+        let discord_bot = tokio::spawn(start_discord_bot());
+        let slack_bot = tokio::spawn(start_slack_bot());
+        tokio::select! {
+            _ = discord_bot => {},
+            _ = slack_bot => {},
+        }
+        Ok(())
+    }
 }
