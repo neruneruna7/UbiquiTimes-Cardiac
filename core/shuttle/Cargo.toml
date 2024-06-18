@@ -16,7 +16,7 @@ tokio.workspace = true
 poise.workspace = true
 
 
-thiserror.workspase = true
 
+share = {path = "../../share"}
 discord = {path = "../../discord"}
 slack = {path = "../../slack"}

@@ -2858,12 +2858,12 @@ dependencies = [
  "anyhow",
  "discord",
  "poise",
+ "share",
  "shuttle-runtime",
  "shuttle-serenity",
  "shuttle-shared-db",
  "slack",
  "sqlx",
- "thiserror",
  "tokio",
  "tracing",
 ]
