@@ -1,3 +1,7 @@
+use discord::start_discord_bot;
+use slack::start_slack_bot;
+use tracing::info;
+
 #[shuttle_runtime::main]
 async fn shuttle_main() -> Result<UbiquiTimesService, shuttle_runtime::Error> {
     Ok(UbiquiTimesService {})
@@ -16,8 +20,12 @@ impl shuttle_runtime::Service for UbiquiTimesService {
         let discord_bot = tokio::spawn(start_discord_bot());
         let slack_bot = tokio::spawn(start_slack_bot());
         tokio::select! {
-            _ = discord_bot => {},
-            _ = slack_bot => {},
+            _ = discord_bot => {
+                info!("Discord bot finished");
+            },
+            _ = slack_bot => {
+                info!("Slack bot finished");
+            },
         }
         Ok(())
     }
