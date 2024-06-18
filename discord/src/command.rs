@@ -4,7 +4,6 @@ use tracing::info;
 
 use crate::{repository::Repository, Context, Error};
 
-use sqlx::Executor;
 
 #[poise::command(prefix_command, track_edits, aliases("UtTimesSet"), slash_command)]
 #[tracing::instrument(skip(ctx))]
@@ -29,7 +28,6 @@ pub async fn ut_c_times_set(
     let user_name = ubiquitimes_user_name(user_name);
     // Timesを作成
     let time = DiscordTimes::new(user_id, guild_id, user_name.clone(), channel_id.get());
-
 
     // DBに保存
     let repository = Repository::new(ctx.data().pool.clone());

@@ -1,6 +1,7 @@
 use std::{sync::Arc, time::Duration};
 
 use anyhow::{Context as _, Result};
+use command::ut_c_times_set;
 use poise::serenity_prelude::{ClientBuilder, GatewayIntents};
 use sqlx::PgPool;
 use tracing::info;
@@ -25,7 +26,7 @@ pub async fn start_discord_bot(arg: DiscordArg) -> Result<()> {
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![hello(), help()],
+            commands: vec![hello(), help(), ut_c_times_set()],
             // ここでprefixを設定する
             prefix_options: poise::PrefixFrameworkOptions {
                 prefix: Some("~".into()),
