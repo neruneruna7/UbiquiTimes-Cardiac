@@ -13,7 +13,7 @@ publish = false
 resolver = "2"
 members = [
     "core/shuttle", 
-    "discord", "repository", "share", 
+    "discord", "repository", "sandbox", "share", 
     "slack", 
 ]
 
@@ -27,10 +27,13 @@ sqlx = {version = "*", features = ["bigdecimal", "postgres"] }
 tracing = "0.1.37"
 tokio = "1.26.0"
 rand = "*"
-
+serde = "*"
 poise = "*"
 
 thiserror = "1.0"
+
+jsonwebtoken = "*"
+time = "*"
 
 testcontainers = {version = "0.18.0", features = []}
 testcontainers-modules = {version = "0.6.1", features = ["postgres",]}

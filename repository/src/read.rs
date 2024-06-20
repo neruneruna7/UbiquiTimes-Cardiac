@@ -1,6 +1,5 @@
 use share::model::PubMessage;
 
-
 pub struct Repository {
     pool: sqlx::PgPool,
 }
@@ -11,14 +10,13 @@ impl Repository {
     }
 
     /// PubMessageを要求しているが，必要なのはその中のユーザーIDだけ
-    pub fn read(msg: PubMessage){
+    pub fn read(msg: PubMessage) {
         todo!("任意のユーザーIDから，他のアプリのユーザーIDも取得する．それらすべてに大して取得クエリを投げる スキーマのユーザー実装後にこの関数を実装する");
-            match msg {
+        match msg {
             PubMessage::Discord(msg) => {
                 let user_id = msg.user_id;
-            },
-            PubMessage::Slack => {
             }
+            PubMessage::Slack => {}
         }
     }
 

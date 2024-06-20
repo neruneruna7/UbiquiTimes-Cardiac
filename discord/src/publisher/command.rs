@@ -9,6 +9,27 @@ use repository::write::discord::Repository;
 
 use super::{Context, Error};
 
+#[poise::command(prefix_command, track_edits, aliases("UtUserLogin"), slash_command)]
+#[tracing::instrument(skip(ctx))]
+/// ユーザー登録 またはログインします
+pub async fn ut_c_user_login(
+    ctx: Context<'_>,
+    #[description = "認証トークン"] token: Option<String>,
+) -> Result<(), Error> {
+    todo!("user login");
+
+    Ok(())
+}
+
+#[poise::command(prefix_command, track_edits, aliases("UtUserDelete"), slash_command)]
+#[tracing::instrument(skip(ctx))]
+/// ユーザー登録を削除します
+pub async fn ut_c_user_delete(ctx: Context<'_>) -> Result<(), Error> {
+    todo!("user delete");
+
+    Ok(())
+}
+
 #[poise::command(prefix_command, track_edits, aliases("UtTimesSet"), slash_command)]
 #[tracing::instrument(skip(ctx))]
 /// 実行したチャンネルをあなたのTimesとして登録します
