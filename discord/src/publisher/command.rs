@@ -5,7 +5,7 @@ use share::{
 };
 use tracing::info;
 
-use crate::repository::Repository;
+use repository::write::discord::Repository;
 
 use super::{Context, Error};
 

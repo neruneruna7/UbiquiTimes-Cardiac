@@ -66,12 +66,12 @@ impl From<PostgresTime> for DiscordTimes {
     }
 }
 
-pub(crate) struct Repository {
+pub struct Repository {
     pool: sqlx::PgPool,
 }
 
 impl Repository {
-    pub(crate) fn new(pool: sqlx::PgPool) -> Self {
+    pub fn new(pool: sqlx::PgPool) -> Self {
         Self { pool }
     }
 
@@ -152,7 +152,7 @@ impl Repository {
 
 #[cfg(test)]
 mod tests {
-    use share::test_util::{generate_random_20_digits, setup_postgres_testcontainer};
+    use crate::test_util::{generate_random_20_digits, setup_postgres_testcontainer};
 
     use super::*;
 

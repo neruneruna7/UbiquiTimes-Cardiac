@@ -13,7 +13,7 @@ publish = false
 resolver = "2"
 members = [
     "core/shuttle", 
-    "discord", "share", 
+    "discord", "repository", "share", 
     "slack", 
 ]
 
