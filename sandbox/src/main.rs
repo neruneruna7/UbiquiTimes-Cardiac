@@ -15,7 +15,8 @@ struct Claims {
 
 impl Claims {
     pub fn new(sub: String) -> Self {
-        let now = OffsetDateTime::now_utc() - time::Duration::minutes(2);
+        let now = OffsetDateTime::now_utc();
+        //  - time::Duration::minutes(2)
         // let exp = now + time::Duration::minutes(1);
         let exp = now + time::Duration::seconds(1);
         let exp = exp.unix_timestamp() as usize;
@@ -39,7 +40,8 @@ fn generate_jwt() -> Result<String, jsonwebtoken::errors::Error> {
 
 fn decode_jwt(token: &str) -> Result<Claims, jsonwebtoken::errors::Error> {
     let decoding_key = DecodingKey::from_secret(SECRET.as_ref());
-    let validation = Validation::default();
+    let mut validation = Validation::default();
+    validation.leeway = 1;
     let decoded_token = decode::<Claims>(token, &decoding_key, &validation)?;
     Ok(decoded_token.claims)
 }
@@ -49,7 +51,7 @@ fn main() {
     let jwt = generate_jwt().unwrap();
     println!("Generated JWT: {}", jwt);
 
-    // sleep(Duration::from_secs(2));
+    sleep(Duration::from_secs(5));
 
     match decode_jwt(&jwt) {
         Ok(t) => println!("JWT is valid: {:?}", t),
