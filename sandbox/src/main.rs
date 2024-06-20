@@ -46,7 +46,6 @@ fn decode_jwt(token: &str) -> Result<Claims, jsonwebtoken::errors::Error> {
     Ok(decoded_token.claims)
 }
 
-
 fn main() {
     let jwt = generate_jwt().unwrap();
     println!("Generated JWT: {}", jwt);

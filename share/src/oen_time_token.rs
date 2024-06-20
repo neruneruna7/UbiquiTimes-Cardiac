@@ -2,8 +2,7 @@ use jsonwebtoken::{encode, Algorithm, DecodingKey, EncodingKey, Header, Validati
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 
-
-#[derive(Debug,Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 struct Claims {
     sub: String,
     iat: usize,
@@ -39,13 +38,11 @@ fn decode_jwt(token: &str, secret: String) -> Result<Claims, jsonwebtoken::error
     Ok(decoded.claims)
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     const SECRET: &str = "some-secret";
-
 
     #[test]
     fn test_encode_decode_jwt() {
