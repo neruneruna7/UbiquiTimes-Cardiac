@@ -1,4 +1,14 @@
 #[derive(Debug, Clone)]
+pub struct User {
+    pub id: i32,
+    pub discord_user_id: Option<u64>,
+    pub slack_user_id: Option<String>,
+    pub token: Option<String>,
+    pub random_int: Option<i32>,
+}
+
+
+#[derive(Debug, Clone)]
 pub enum Times {
     Discord(DiscordTimes),
     Slack,
