@@ -6,7 +6,7 @@ use command::*;
 
 use poise::serenity_prelude::{ClientBuilder, GatewayIntents};
 
-use share::model::Times;
+use share::model::{PubMessage, Times};
 
 use sqlx::PgPool;
 
@@ -19,12 +19,12 @@ pub(crate) mod command;
 pub struct DiscordArg {
     pub discord_bot_token: String,
     pub pool: PgPool,
-    pub channel: Sender<Vec<Times>>,
+    pub channel: Sender<PubMessage>,
 }
 
 pub(crate) struct Data {
     pub(crate) pool: PgPool,
-    pub(crate) channel: Sender<Vec<Times>>,
+    pub(crate) channel: Sender<PubMessage>,
 }
 
 // User data, which is stored and accessible in all command invocations

@@ -43,3 +43,23 @@ impl DiscordCommunity {
         }
     }
 }
+
+#[derive(Debug, Clone)]
+pub enum PubMessage {
+    Discord(DiscordPubMessage),
+    Slack,
+}
+
+#[derive(Debug, Clone)]
+pub struct DiscordPubMessage {
+    pub user_id: u64,
+    pub channel_id: u64,
+    pub content: String,
+}
+
+#[derive(Debug, Clone)]
+pub struct SlackPubMessage {
+    pub user_id: String,
+    pub channel_id: String,
+    pub content: String,
+}

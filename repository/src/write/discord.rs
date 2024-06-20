@@ -20,7 +20,6 @@ impl From<DiscordCommunity> for PostgresGuild {
 }
 
 // PostgresDiscordCommunityをDiscordCommunityに変換する
-
 impl From<PostgresGuild> for DiscordCommunity {
     fn from(p: PostgresGuild) -> Self {
         Self {
@@ -31,7 +30,6 @@ impl From<PostgresGuild> for DiscordCommunity {
 }
 
 // postgresではu64を格納できないので，Bigdecimalに変換して格納する
-
 #[derive(Debug, Clone, FromRow)]
 struct PostgresTime {
     user_id: BigDecimal,

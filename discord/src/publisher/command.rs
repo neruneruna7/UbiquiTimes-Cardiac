@@ -1,6 +1,6 @@
 use anyhow::Context as _;
 use share::{
-    model::{DiscordCommunity, DiscordTimes},
+    model::{DiscordCommunity, DiscordPubMessage, DiscordTimes, PubMessage},
     util::ubiquitimes_user_name,
 };
 use tracing::info;
@@ -79,20 +79,14 @@ pub async fn ut_c_times_release(
     let content = remove_ut_prefix(&prefix_ctx.msg.content);
     info!("content: {:?}", content);
 
-    // Times情報を取得
-    // let user_id = ctx.author().id.get();
-
-    // let times_repository = ctx.data().times_repository.clone();
-    // let times = times_repository.get_times(user_id).await?;
-
-    // Timesから，発信元のguild_idを持ったTimeを削除
-    let guild_id = ctx.guild_id().context("guild not found")?.get();
-    // let times = times
-    //     .into_iter()
-    //     .filter(|t| t.guild_id != guild_id)
-    //     .collect();
-
     // channelで送信
+    let pub_message = PubMessage::Discord(DiscordPubMessage {
+        user_id: ctx.author().id.get(),
+        channel_id: ctx.channel_id().get(),
+        content,
+    });
+
+    ctx.data().channel.send(pub_message).await?;
 
     // info!("times release complete. user_id: {}", user_id);
     Ok(())
