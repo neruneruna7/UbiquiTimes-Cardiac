@@ -56,7 +56,7 @@ pub async fn ut_c_times_set(
 
     // DBに保存
     let repository = Repository::new(ctx.data().pool.clone());
-    repository.upsert(guild, time).await?;
+    repository.upsert_guild_time(guild, time).await?;
 
     info!(
         "new times set complete. guild_id: {}, user_id: {}, channel_id: {}",

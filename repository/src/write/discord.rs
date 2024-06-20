@@ -1,5 +1,5 @@
 use crate::util::discord::*;
-use share::model::{DiscordCommunity, DiscordTimes, Times};
+use share::model::{DiscordCommunity, DiscordTimes, User};
 use sqlx::{prelude::FromRow, types::BigDecimal};
 use tracing::info;
 
@@ -13,7 +13,32 @@ impl Repository {
     }
 
     #[tracing::instrument(skip(self))]
-    pub async fn upsert(
+    pub async fn upsert_user(&self, user: User) -> anyhow::Result<()> {
+        let user = PostgresUser::from(user);
+        let query = "
+        INSERT INTO users (id, discord_user_id, slack_user_id, token, random_int)
+        VALUES ($1, $2, $3, $4, $5)
+        ON CONFLICT (id) DO UPDATE
+        SET discord_user_id = EXCLUDED.discord_user_id,
+            slack_user_id = EXCLUDED.slack_user_id,
+            token = EXCLUDED.token,
+            random_int = EXCLUDED.random_int;
+    ";
+
+        sqlx::query(query)
+            .bind(user.id)
+            .bind(user.discord_user_id)
+            .bind(user.slack_user_id)
+            .bind(user.token)
+            .bind(user.random_int)
+            .execute(&self.pool)
+            .await?;
+
+        Ok(())
+    }
+
+    #[tracing::instrument(skip(self))]
+    pub async fn upsert_guild_time(
         &self,
         community: DiscordCommunity,
         times: DiscordTimes,
@@ -94,6 +119,84 @@ mod tests {
     use super::*;
 
     #[tokio::test]
+    async fn test_upsert_user_new_user() -> Result<(), anyhow::Error> {
+        // Setup test environment
+        let (_container, pool) = setup_postgres_testcontainer().await;
+        let repository = Repository::new(pool);
+
+        // Create a new user
+        let user = User {
+            id: 1,
+            discord_user_id: Some(generate_random_20_digits()),
+            slack_user_id: Some("test_id".to_string()),
+            token: Some("test_token".to_string()),
+            random_int: Some(42),
+        };
+
+        // Attempt to upsert the new user
+        repository.upsert_user(user.clone()).await?;
+
+        // Verify the user was inserted
+        let fetched_user: Option<PostgresUser> =
+            sqlx::query_as("SELECT * FROM users WHERE id = $1")
+                .bind(&user.id)
+                .fetch_optional(&repository.pool)
+                .await?;
+
+        assert!(fetched_user.is_some());
+        let fetched_user = User::from(fetched_user.unwrap());
+        assert_eq!(fetched_user.discord_user_id, user.discord_user_id);
+        assert_eq!(fetched_user.slack_user_id, user.slack_user_id);
+        assert_eq!(fetched_user.token, user.token);
+        assert_eq!(fetched_user.random_int, user.random_int);
+
+        Ok(())
+    }
+
+    #[tokio::test]
+    async fn test_upsert_user_update_existing() -> Result<(), anyhow::Error> {
+        // Setup test environment
+        let (_container, pool) = setup_postgres_testcontainer().await;
+        let repository = Repository::new(pool);
+
+        // Create and insert a user
+        let mut user = User {
+            id: 1,
+            discord_user_id: Some(generate_random_20_digits()),
+            slack_user_id: Some("initial_id".to_string()),
+            token: Some("initial_token".to_string()),
+            random_int: Some(24),
+        };
+
+        repository.upsert_user(user.clone()).await?;
+
+        // Update the user's details
+        user.discord_user_id = Some(generate_random_20_digits());
+        user.slack_user_id = Some("updated_id".to_string());
+        user.token = Some("updated_token".to_string());
+        user.random_int = Some(48);
+
+        // Attempt to upsert the updated user
+        repository.upsert_user(user.clone()).await?;
+
+        // Verify the user was updated
+        let fetched_user: Option<PostgresUser> =
+            sqlx::query_as("SELECT * FROM users WHERE id = $1")
+                .bind(&user.id)
+                .fetch_optional(&repository.pool)
+                .await?;
+
+        assert!(fetched_user.is_some());
+        let fetched_user = User::from(fetched_user.unwrap());
+        assert_eq!(fetched_user.discord_user_id, user.discord_user_id);
+        assert_eq!(fetched_user.slack_user_id, user.slack_user_id);
+        assert_eq!(fetched_user.token, user.token);
+        assert_eq!(fetched_user.random_int, user.random_int);
+
+        Ok(())
+    }
+
+    #[tokio::test]
     async fn test_upsert() -> Result<(), anyhow::Error> {
         // Create a new database pool for testing
         let (_container, pool) = setup_postgres_testcontainer().await;
@@ -114,7 +217,9 @@ mod tests {
         };
 
         // Call the upsert method
-        repository.upsert(community.clone(), times.clone()).await?;
+        repository
+            .upsert_guild_time(community.clone(), times.clone())
+            .await?;
 
         let community = PostgresGuild::from(community);
         let times = PostgresTime::from(times);
@@ -183,7 +288,9 @@ mod tests {
 
         // Insert test data
         for i in times.iter() {
-            repository.upsert(i.0.clone(), i.1.clone()).await?;
+            repository
+                .upsert_guild_time(i.0.clone(), i.1.clone())
+                .await?;
         }
         // Call the read_times method
         let mut fetched_times = repository.read_times(user_id).await?;

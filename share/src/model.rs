@@ -7,7 +7,6 @@ pub struct User {
     pub random_int: Option<i32>,
 }
 
-
 #[derive(Debug, Clone)]
 pub enum Times {
     Discord(DiscordTimes),

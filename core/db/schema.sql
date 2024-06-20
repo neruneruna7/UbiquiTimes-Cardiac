@@ -7,6 +7,18 @@ DROP TABLE IF EXISTS discord_times;
 DROP TABLE IF EXISTS discord_guilds;
 
 
+
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    discord_user_id NUMERIC(20) UNIQUE,
+    slack_user_id TEXT UNIQUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    token TEXT,
+    random_int INT
+    -- FOREIGN KEY (discord_user_id) REFERENCES discord_times(user_id),
+    -- FOREIGN KEY (slack_user_id) REFERENCES slack_times(user_id)
+);
+
 -- guild_id等が数字で表せたのはDiscordの話で，Slackなどでは文字列で表される
 -- そのため，文字列で表すように変更
 
@@ -25,7 +37,8 @@ CREATE TABLE IF NOT EXISTS discord_times (
     user_name VARCHAR(255) NOT NULL,
     channel_id NUMERIC(20) NOT NULL,
     PRIMARY KEY (user_id, guild_id),
-    FOREIGN KEY (guild_id) REFERENCES discord_guilds(guild_id)
+    FOREIGN KEY (guild_id) REFERENCES discord_guilds(guild_id),
+    FOREIGN KEY (user_id) REFERENCES users(discord_user_id)
 );
 
 CREATE TABLE IF NOT EXISTS slack_guilds (
@@ -40,8 +53,10 @@ CREATE TABLE IF NOT EXISTS slack_times (
     user_name VARCHAR(255) NOT NULL,
     channel_id TEXT NOT NULL,
     PRIMARY KEY (user_id, guild_id),
-    FOREIGN KEY (guild_id) REFERENCES slack_guilds(guild_id)
+    FOREIGN KEY (guild_id) REFERENCES slack_guilds(guild_id),
+    FOREIGN KEY (user_id) REFERENCES users(slack_user_id)
 );
+
 
 
 
