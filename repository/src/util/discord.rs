@@ -1,8 +1,42 @@
 //!Discord用のデータへDBアクセスするときの便利処理などをまとめたモジュール
 //!
 
-use share::model::{DiscordCommunity, DiscordTimes};
+use share::model::{DiscordCommunity, DiscordTimes, User};
 use sqlx::{prelude::FromRow, types::BigDecimal};
+
+#[derive(Debug, Clone, FromRow)]
+pub struct PostgresUser {
+    pub id: i32,
+    pub discord_user_id: Option<BigDecimal>,
+    pub slack_user_id: Option<String>,
+    pub token: Option<String>,
+    pub random_int: Option<i32>,
+}
+
+impl From<User> for PostgresUser {
+    fn from(user: User) -> Self {
+        PostgresUser {
+            id: user.id,
+            discord_user_id: user.discord_user_id.map(BigDecimal::from),
+            slack_user_id: user.slack_user_id,
+            token: user.token,
+            random_int: user.random_int,
+        }
+    }
+}
+
+impl From<PostgresUser> for User {
+    fn from(pg_user: PostgresUser) -> Self {
+        User {
+            id: pg_user.id,
+            discord_user_id: pg_user.discord_user_id.map(|d| d.to_string().parse::<u64>().expect("BigDecimal to u64 conversion failed")),
+            slack_user_id: pg_user.slack_user_id,
+            token: pg_user.token,
+            random_int: pg_user.random_int,
+        }
+    }
+}
+
 
 #[derive(Debug, Clone, FromRow)]
 pub struct PostgresGuild {
