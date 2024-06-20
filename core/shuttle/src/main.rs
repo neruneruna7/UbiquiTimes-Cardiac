@@ -6,7 +6,7 @@ use sqlx::{Executor as _, PgPool};
 use tokio::sync::{broadcast, mpsc};
 use tracing::info;
 
-mod queue;
+mod hub;
 
 #[shuttle_runtime::main]
 async fn shuttle_main(
@@ -50,7 +50,7 @@ impl shuttle_runtime::Service for UbiquiTimesService {
         let slack_bot = tokio::spawn(start_slack_bot());
 
         let (broad_tx, mut broad_rx) = broadcast::channel(100);
-        let queue = tokio::spawn(queue::queue(rx, broad_tx));
+        let queue = tokio::spawn(hub::queue(rx, broad_tx));
 
         tokio::select! {
             _ = discord_bot => {
