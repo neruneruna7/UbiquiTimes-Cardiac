@@ -1,6 +1,6 @@
 use anyhow::Context as _;
 use share::{
-    model::{DiscordCommunity, DiscordPubMessage, DiscordTimes, PubMessage},
+    model::{DiscordCommunity, DiscordNewUser, DiscordPubMessage, DiscordTimes, PubMessage, User},
     util::ubiquitimes_user_name,
 };
 use tracing::info;
@@ -9,6 +9,35 @@ use repository::write::discord::Repository;
 
 use super::{Context, Error};
 
+#[poise::command(prefix_command, track_edits, aliases("UtUserCreate"), slash_command)]
+#[tracing::instrument(skip(ctx))]
+/// ユーザー登録します.最初に実行してください
+/// 
+/// Todo! ここにコマンドの推奨実行順を書く
+pub async fn ut_c_user_create(
+    ctx: Context<'_>,
+) -> Result<(), Error> {
+    let discord_new_user = DiscordNewUser {
+        discord_user_id: ctx.author().id.get(),
+    };
+    let repository = Repository::new(ctx.data().pool.clone());
+    let row_affected = repository.insert_user(discord_new_user).await?;
+
+    match row_affected {
+        1 => {
+            info!("new user login complete. user_id: {}", ctx.author().id.get());
+            ctx.say("Success! You are now registered as a user of Ubiquitimes!").await?;
+        }
+        _ => {
+            info!("user login failed. user_id: {}", ctx.author().id.get());
+            ctx.say("Failed to register as a user of Ubiquitimes. Are you already registered?").await?;
+        }
+    }
+
+    Ok(())
+}
+
+
 #[poise::command(prefix_command, track_edits, aliases("UtUserLogin"), slash_command)]
 #[tracing::instrument(skip(ctx))]
 /// ユーザー登録 またはログインします
@@ -16,6 +45,15 @@ pub async fn ut_c_user_login(
     ctx: Context<'_>,
     #[description = "認証トークン"] token: Option<String>,
 ) -> Result<(), Error> {
+    // ユーザークリエイト
+    let user = User {
+        id: todo!(),
+        discord_user_id: todo!(),
+        slack_user_id: todo!(),
+        token: None,
+        random_int: None,
+    };
+
     todo!("user login");
 
     Ok(())
