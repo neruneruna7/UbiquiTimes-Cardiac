@@ -15,8 +15,6 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     token TEXT,
     random_int INT
-    -- FOREIGN KEY (discord_user_id) REFERENCES discord_times(user_id),
-    -- FOREIGN KEY (slack_user_id) REFERENCES slack_times(user_id)
 );
 
 -- guild_id等が数字で表せたのはDiscordの話で，Slackなどでは文字列で表される

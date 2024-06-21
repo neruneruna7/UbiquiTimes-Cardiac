@@ -208,21 +208,36 @@ mod tests {
             guild_id: generate_random_20_digits(),
             guild_name: "Test Guild".to_string(),
         };
+        
+        // ユーザーテストデータ
+        let user = User {
+            id: 1,
+            discord_user_id: Some(1),
+            slack_user_id: Some("test_id".to_string()),
+            token: Some("test_token".to_string()),
+            random_int: Some(42),
+        };
 
         let times = DiscordTimes {
-            user_id: generate_random_20_digits(),
+            user_id: user.discord_user_id.unwrap(),
             guild_id: community.guild_id,
             user_name: "Test User".to_string(),
             channel_id: generate_random_20_digits(),
         };
+
+        repository.upsert_user(user.clone()).await?;
 
         // Call the upsert method
         repository
             .upsert_guild_time(community.clone(), times.clone())
             .await?;
 
+
+
         let community = PostgresGuild::from(community);
         let times = PostgresTime::from(times);
+
+
 
         // Verify that the guild and times data is inserted or updated correctly
         let guild =
@@ -253,6 +268,17 @@ mod tests {
         let repository = Repository::new(pool);
         // Create test data
         let user_id = generate_random_20_digits();
+        let user1 = User {
+            id: 1,
+            discord_user_id: Some(user_id),
+            slack_user_id: Some("test_id1".to_string()),
+            token: Some("test_token".to_string()),
+            random_int: Some(42),
+        };
+
+        repository.upsert_user(user1.clone()).await?;
+
+
 
         let guild_id1 = generate_random_20_digits();
         let guild1 = DiscordCommunity {
@@ -269,25 +295,28 @@ mod tests {
             (
                 guild1,
                 DiscordTimes {
-                    user_id,
+                    user_id: user1.discord_user_id.unwrap(),
                     guild_id: guild_id1,
                     user_name: "User One".to_string(),
                     channel_id: generate_random_20_digits(),
                 },
+                user1.clone(),
             ),
             (
                 guild2,
                 DiscordTimes {
-                    user_id,
+                    user_id: user1.discord_user_id.unwrap(),
                     guild_id: guild_id2,
                     user_name: "User Two".to_string(),
                     channel_id: generate_random_20_digits(),
                 },
+                user1,
             ),
         ];
 
         // Insert test data
         for i in times.iter() {
+
             repository
                 .upsert_guild_time(i.0.clone(), i.1.clone())
                 .await?;
@@ -297,7 +326,7 @@ mod tests {
 
         let mut times = times
             .into_iter()
-            .map(|(_, t)| t)
+            .map(|(_, t, _)| t)
             .collect::<Vec<DiscordTimes>>();
         times.sort_by_key(|x| (x.guild_id, x.user_id));
         fetched_times.sort_by_key(|x| (x.guild_id, x.user_id));
