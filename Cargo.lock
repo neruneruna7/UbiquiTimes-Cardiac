@@ -2898,6 +2898,7 @@ name = "share"
 version = "0.1.0"
 dependencies = [
  "jsonwebtoken",
+ "rand",
  "serde",
  "time",
 ]

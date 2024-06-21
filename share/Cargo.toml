@@ -10,3 +10,4 @@ publish.workspace = true
 jsonwebtoken.workspace = true
 serde.workspace = true
 time.workspace = true
+rand.workspace = true
