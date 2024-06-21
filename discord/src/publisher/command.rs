@@ -43,15 +43,15 @@ pub async fn ut_c_user_create(
 /// ユーザー登録 またはログインします
 pub async fn ut_c_user_login(
     ctx: Context<'_>,
-    #[description = "認証トークン"] token: Option<String>,
+    #[description = "認証トークン"] token: String,
 ) -> Result<(), Error> {
+    todo!("トークンをJWTデコードして，乱数を取り出す");
     // ユーザークリエイト
     let user = User {
         id: todo!(),
         discord_user_id: todo!(),
         slack_user_id: todo!(),
-        token: None,
-        random_int: None,
+        token_random: None,
     };
 
     todo!("user login");

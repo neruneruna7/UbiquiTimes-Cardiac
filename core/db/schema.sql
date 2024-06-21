@@ -13,8 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
     discord_user_id NUMERIC(20) UNIQUE,
     slack_user_id TEXT UNIQUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    token TEXT,
-    random_int INT
+    token_random INT
 );
 
 -- guild_id等が数字で表せたのはDiscordの話で，Slackなどでは文字列で表される

@@ -22,8 +22,7 @@ pub struct PostgresUser {
     pub id: i32,
     pub discord_user_id: Option<BigDecimal>,
     pub slack_user_id: Option<String>,
-    pub token: Option<String>,
-    pub random_int: Option<i32>,
+    pub token_random: Option<i32>,
 }
 
 impl From<User> for PostgresUser {
@@ -32,8 +31,7 @@ impl From<User> for PostgresUser {
             id: user.id,
             discord_user_id: user.discord_user_id.map(BigDecimal::from),
             slack_user_id: user.slack_user_id,
-            token: user.token,
-            random_int: user.random_int,
+            token_random: user.token_random,
         }
     }
 }
@@ -48,8 +46,7 @@ impl From<PostgresUser> for User {
                     .expect("BigDecimal to u64 conversion failed")
             }),
             slack_user_id: pg_user.slack_user_id,
-            token: pg_user.token,
-            random_int: pg_user.random_int,
+            token_random: pg_user.token_random,
         }
     }
 }

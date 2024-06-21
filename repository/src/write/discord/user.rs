@@ -48,15 +48,14 @@ impl Repository {
         let user = PostgresUser::from(user);
         let query = "
             UPDATE users
-            SET discord_user_id = $1, slack_user_id = $2, token = $3, random_int = $4
-            WHERE id = $5;
+            SET discord_user_id = $1, slack_user_id = $2, token_random = $3
+            WHERE id = $4;
         ";
 
         let r = sqlx::query(query)
             .bind(user.discord_user_id)
             .bind(user.slack_user_id)
-            .bind(user.token)
-            .bind(user.random_int)
+            .bind(user.token_random)
             .bind(user.id)
             .execute(&self.pool)
             .await?;
@@ -172,8 +171,7 @@ mod tests {
             id: user.id,
             discord_user_id: Some(generate_random_20_digits()),
             slack_user_id: Some("test_slack_id".to_string()),
-            token: Some("token".to_string()),
-            random_int: Some(123),
+            token_random: Some(123),
         };
         let rows_affected = repository.update_user(updated_user.clone()).await?;
         assert_eq!(rows_affected, 1);
