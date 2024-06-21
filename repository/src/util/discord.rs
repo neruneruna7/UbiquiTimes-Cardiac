@@ -1,8 +1,21 @@
 //!Discord用のデータへDBアクセスするときの便利処理などをまとめたモジュール
 //!
 
-use share::model::{DiscordCommunity, DiscordTimes, User};
+use share::model::{DiscordCommunity, DiscordNewUser, DiscordTimes, User};
 use sqlx::{prelude::FromRow, types::BigDecimal};
+
+#[derive(Debug, Clone, FromRow)]
+pub struct PostgresNewUser {
+    pub discord_user_id: Option<BigDecimal>,
+}
+
+impl From<DiscordNewUser> for PostgresNewUser {
+    fn from(user: DiscordNewUser) -> Self {
+        PostgresNewUser {
+            discord_user_id: user.discord_user_id.map(BigDecimal::from),
+        }
+    }
+}
 
 #[derive(Debug, Clone, FromRow)]
 pub struct PostgresUser {

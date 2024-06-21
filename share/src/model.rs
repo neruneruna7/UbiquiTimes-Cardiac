@@ -1,4 +1,14 @@
 #[derive(Debug, Clone)]
+pub struct DiscordNewUser {
+    pub discord_user_id: Option<u64>,
+}
+
+#[derive(Debug, Clone)]
+pub struct SlackNewUser {
+    pub slack_user_id: Option<String>,
+}
+
+#[derive(Debug, Clone)]
 pub struct User {
     pub id: i32,
     pub discord_user_id: Option<u64>,
