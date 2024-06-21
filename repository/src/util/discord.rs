@@ -12,7 +12,7 @@ pub struct PostgresNewUser {
 impl From<DiscordNewUser> for PostgresNewUser {
     fn from(user: DiscordNewUser) -> Self {
         PostgresNewUser {
-            discord_user_id: user.discord_user_id.map(BigDecimal::from),
+            discord_user_id: Some(BigDecimal::from(user.discord_user_id)),
         }
     }
 }
