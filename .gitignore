@@ -1,3 +1,6 @@
 /target
 .env*
 .sqlx
+Gabage/shuttle/Secrets.toml
+core/shuttle/Secrets.toml
+.cargo/config.toml
