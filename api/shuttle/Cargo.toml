@@ -5,18 +5,18 @@ edition = "2021"
 publish = false
 
 [dependencies]
-anyhow = "1.0.68"
+anyhow = "1.0.88"
 poise = "0.6.1"
-shuttle-runtime = "0.45.0"
+shuttle-runtime = "0.47.0"
 # Since poise is a serenity command framework, it can run on Shuttle with shuttle-serenity
-shuttle-serenity = "0.45.0"
-shuttle-shared-db = { version = "0.45.0", features = ["postgres", "sqlx"] }
-sqlx = "0.7.3"
-tracing = "0.1.37"
-tokio = "1.26.0"
+shuttle-serenity = "0.47.0"
+shuttle-shared-db = { version = "0.47.0", features = ["postgres", "sqlx"] }
+sqlx = "0.7.1" # libsqlite3-sys への依存関係の問題 shared-dbの0.47.0を使うため
+tracing = "0.1.40"
+tokio = "1.40.0"
 
 
-thiserror = "1.0"
+thiserror = "1.0.63"
 
 domain = { path = "../../domain"}
 repository ={ path = "../../repository"}
